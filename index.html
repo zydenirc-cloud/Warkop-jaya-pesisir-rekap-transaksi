@@ -44,13 +44,11 @@
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Custom scrollbars */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
 
-        /* Responsive Bottom Nav & FAB */
         .bottom-nav { display: none; }
         .fab { display: none; }
         @media (max-width: 768px) {
@@ -74,11 +72,15 @@
         }
 
         .modal-overlay { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px); }
-        #toast { transition: transform 0.3s ease-in-out, opacity 0.3s; }
-        .toast-hidden { transform: translateY(-100%); opacity: 0; pointer-events: none; }
-        .toast-visible { transform: translateY(0); opacity: 1; }
         
-        /* Pulse Animation for Sync Badge */
+        /* Modern Clean Toast Animation */
+        #toast { 
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1); 
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        .toast-hidden { transform: translateY(-30px) scale(0.95); opacity: 0; pointer-events: none; }
+        .toast-visible { transform: translateY(0) scale(1); opacity: 1; }
+        
         @keyframes pulseGlow {
             0%, 100% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.85; transform: scale(0.97); }
@@ -88,9 +90,11 @@
 </head>
 <body class="font-sans antialiased">
 
-    <!-- Toast Notification -->
-    <div id="toast" class="toast-hidden fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] px-6 py-3 rounded-full shadow-lg font-medium text-white flex items-center space-x-2">
-        <i data-lucide="info" class="w-5 h-5"></i>
+    <!-- Modern Animated Toast Notification -->
+    <div id="toast" class="toast-hidden fixed top-6 left-1/2 transform -translate-x-1/2 z-[100] px-5 py-3 rounded-2xl font-medium text-white flex items-center space-x-3 text-sm">
+        <div id="toastIconWrap" class="w-6 h-6 rounded-full flex items-center justify-center bg-white/20">
+            <i id="toastIcon" data-lucide="check" class="w-4 h-4 stroke-[2.5]"></i>
+        </div>
         <span id="toastMessage">Pesan</span>
     </div>
 
@@ -105,13 +109,11 @@
         </div>
         
         <div class="flex items-center space-x-2 text-xs">
-            <!-- Indikator Pending Sync -->
             <button onclick="triggerSyncData()" id="btnSyncHeader" class="hidden items-center bg-amber-50 border border-amber-200 text-amber-700 px-2.5 py-1.5 rounded-full font-semibold hover:bg-amber-100 transition animate-pulse-glow">
                 <i data-lucide="refresh-cw" class="w-3.5 h-3.5 mr-1.5 animate-spin"></i>
                 <span id="syncPendingCount">0 Offline</span>
             </button>
 
-            <!-- Status Koneksi -->
             <div class="flex items-center bg-gray-50 border border-gray-200 px-2.5 py-1.5 rounded-full">
                 <div id="connStatusDot" class="w-2.5 h-2.5 rounded-full bg-danger mr-1.5"></div>
                 <span id="connStatusText" class="font-medium text-[11px] md:text-xs text-textSec">Lokal</span>
@@ -121,7 +123,7 @@
         </div>
     </header>
 
-    <!-- Desktop Sidebar (Hidden on Mobile with hidden md:flex to prevent overlapping bug) -->
+    <!-- Desktop Sidebar -->
     <aside class="hidden md:flex sidebar fixed top-16 left-0 h-[calc(100vh-4rem)] w-64 bg-white border-r border-gray-100 z-20 flex-col pt-6 pb-4 overflow-y-auto">
         <div class="px-6 mb-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Menu Utama</div>
         <nav class="flex flex-col space-y-1 px-3 mb-6">
@@ -143,7 +145,6 @@
         
         <!-- ==================== PAGE: DASHBOARD ==================== -->
         <section id="page-dashboard" class="page">
-            <!-- Offline Sync Banner -->
             <div id="bannerSyncPending" class="hidden mb-6 bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4 rounded-2xl shadow-md flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div class="flex items-center space-x-3">
                     <div class="p-2 bg-white/20 rounded-xl"><i data-lucide="wifi-off" class="w-6 h-6"></i></div>
@@ -162,7 +163,6 @@
                     <h2 class="text-2xl font-bold text-textMain" id="dashWelcome">Selamat datang, Owner</h2>
                     <p class="text-textSec text-sm">Berikut ringkasan keuangan <span class="font-semibold text-primary" id="dashShopName">Warkop Jaya Pesisir</span></p>
                 </div>
-                <!-- Filter Tanggal Dashboard -->
                 <div class="flex items-center bg-white p-1.5 rounded-xl border border-gray-200 text-xs font-medium space-x-1 shadow-sm self-start sm:self-auto">
                     <button onclick="filterDash('hari')" id="btnFilterHari" class="px-3 py-1.5 rounded-lg bg-primary text-white transition">Hari Ini</button>
                     <button onclick="filterDash('minggu')" id="btnFilterMinggu" class="px-3 py-1.5 rounded-lg text-textSec hover:bg-gray-100 transition">Minggu Ini</button>
@@ -170,7 +170,6 @@
                 </div>
             </div>
 
-            <!-- Stats Grid -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 mb-8">
                 <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
                     <div class="flex items-center justify-between mb-3"><span class="text-xs text-textSec font-medium">Penjualan Hari Ini</span><div class="p-2 bg-green-50 text-success rounded-xl"><i data-lucide="banknote" class="w-4 h-4 md:w-5 md:h-5"></i></div></div>
@@ -190,7 +189,6 @@
                 </div>
             </div>
 
-            <!-- Charts Section -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm md:col-span-2">
                     <div class="flex justify-between items-center mb-4">
@@ -209,7 +207,6 @@
                 </div>
             </div>
 
-            <!-- Summary Lists -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
                     <div class="flex justify-between items-center mb-4">
@@ -284,7 +281,6 @@
                 </div>
             </div>
 
-            <!-- Header Stat Piutang -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
                     <span class="text-xs text-textSec font-medium block mb-1">Total Sisa Piutang</span>
@@ -370,7 +366,6 @@
                 </div>
             </div>
 
-            <!-- Sub Tabs -->
             <div class="flex border-b border-gray-200 mb-6 space-x-4 md:space-x-6 text-xs md:text-sm font-semibold">
                 <button onclick="switchBahanTab('master')" id="tabBahanMaster" class="pb-3 border-b-2 border-primary text-primary transition">Data Bahan</button>
                 <button onclick="switchBahanTab('pembelian')" id="tabBahanPembelian" class="pb-3 border-b-2 border-transparent text-textSec hover:text-textMain transition">Pembelian Bahan</button>
@@ -420,7 +415,6 @@
             </div>
 
             <div id="subtabBahanPemakaian" class="hidden space-y-6">
-                <!-- Filter Periode Pemakaian -->
                 <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
                     <div class="flex items-center space-x-2 text-xs font-medium">
                         <label class="text-textSec">Periode Bulan:</label>
@@ -438,7 +432,6 @@
                     <button onclick="openCatatPemakaianModal()" class="bg-primary hover:bg-blue-800 text-white px-4 py-2.5 rounded-xl font-semibold text-xs shadow-md flex items-center justify-center transition"><i data-lucide="edit-3" class="w-4 h-4 mr-2"></i> + Catat / Update Stok Akhir Bulan</button>
                 </div>
 
-                <!-- Total Summary Banner -->
                 <div class="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex justify-between items-center">
                     <div>
                         <div class="text-xs text-textSec font-medium">Total Biaya Bahan Terpakai (Periode Ini)</div>
@@ -447,7 +440,6 @@
                     <div class="p-3 bg-primary text-white rounded-xl"><i data-lucide="calculator" class="w-5 h-5"></i></div>
                 </div>
 
-                <!-- Table Pemakaian -->
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                     <div class="hidden md:block overflow-x-auto">
                         <table class="w-full text-left text-sm whitespace-nowrap">
@@ -486,7 +478,6 @@
                 </div>
             </div>
 
-            <!-- Report Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                     <h3 class="font-bold text-lg text-primary mb-4 flex items-center"><i data-lucide="arrow-down-right" class="w-5 h-5 mr-2"></i> Pendapatan (Omzet)</h3>
@@ -574,19 +565,28 @@
     <!-- Floating Action Button Mobile -->
     <div class="fab md:hidden" onclick="openModal('modalMenuAction')"><i data-lucide="plus" class="w-7 h-7"></i></div>
 
-    <!-- Modal: Action Menu Mobile -->
+    <!-- Modal: Action Menu Mobile (Centered Icons) -->
     <div id="modalMenuAction" class="fixed inset-0 modal-overlay hidden z-50 flex items-end justify-center pb-20 md:items-center md:pb-0">
         <div class="bg-white rounded-t-3xl md:rounded-2xl w-full max-w-sm p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-6"><h3 class="font-bold text-lg">Tambah Data Baru</h3><button onclick="closeModal('modalMenuAction')"><i data-lucide="x" class="w-5 h-5"></i></button></div>
             <div class="grid grid-cols-2 gap-4">
-                <button onclick="closeModal('modalMenuAction'); openModal('modalPenjualan')" class="p-4 border border-gray-100 bg-gray-50 rounded-2xl flex flex-col items-center font-bold text-primary hover:bg-blue-50 text-xs"><i data-lucide="receipt" class="w-7 h-7 mb-2"></i>Penjualan</button>
-                <button onclick="closeModal('modalMenuAction'); openModal('modalPengeluaran')" class="p-4 border border-gray-100 bg-gray-50 rounded-2xl flex flex-col items-center font-bold text-danger hover:bg-red-50 text-xs"><i data-lucide="wallet" class="w-7 h-7 mb-2"></i>Pengeluaran</button>
-                <button onclick="closeModal('modalMenuAction'); openModal('modalPembelianBahan')" class="p-4 border border-gray-100 bg-gray-50 rounded-2xl flex flex-col items-center font-bold text-warning hover:bg-orange-50 text-xs col-span-2"><i data-lucide="package" class="w-7 h-7 mb-2"></i>Pembelian Bahan</button>
+                <button onclick="closeModal('modalMenuAction'); openModal('modalPenjualan')" class="p-4 border border-gray-100 bg-gray-50 rounded-2xl flex flex-col items-center justify-center text-center font-bold text-primary hover:bg-blue-50 text-xs">
+                    <div class="flex items-center justify-center w-10 h-10 mb-2 bg-blue-100 text-primary rounded-full"><i data-lucide="receipt" class="w-5 h-5"></i></div>
+                    Penjualan
+                </button>
+                <button onclick="closeModal('modalMenuAction'); openModal('modalPengeluaran')" class="p-4 border border-gray-100 bg-gray-50 rounded-2xl flex flex-col items-center justify-center text-center font-bold text-danger hover:bg-red-50 text-xs">
+                    <div class="flex items-center justify-center w-10 h-10 mb-2 bg-red-100 text-danger rounded-full"><i data-lucide="wallet" class="w-5 h-5"></i></div>
+                    Pengeluaran
+                </button>
+                <button onclick="closeModal('modalMenuAction'); openModal('modalPembelianBahan')" class="p-4 border border-gray-100 bg-gray-50 rounded-2xl flex flex-col items-center justify-center text-center font-bold text-warning hover:bg-orange-50 text-xs col-span-2">
+                    <div class="flex items-center justify-center w-10 h-10 mb-2 bg-orange-100 text-warning rounded-full"><i data-lucide="package" class="w-5 h-5"></i></div>
+                    Pembelian Bahan
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Modal Konfirmasi Hapus (Pengganti confirm native) -->
+    <!-- Modal Konfirmasi Hapus -->
     <div id="modalConfirmDelete" class="fixed inset-0 modal-overlay hidden z-[60] flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl text-center space-y-4">
             <div class="w-12 h-12 bg-red-100 text-danger rounded-full flex items-center justify-center mx-auto"><i data-lucide="alert-triangle" class="w-6 h-6"></i></div>
@@ -751,16 +751,11 @@
     </div>
 
     <script>
-        // Initialize Lucide Icons
         lucide.createIcons();
 
-        // Chart Instances
         let trendChartInstance = null;
         let metodeChartInstance = null;
 
-        // =========================================================================
-        // OFFLINE-FIRST & LOCAL STORAGE ENGINE
-        // =========================================================================
         const STORAGE_KEYS = {
             penjualan: 'warkop_db_penjualan',
             piutang: 'warkop_db_piutang',
@@ -790,7 +785,6 @@
             return `${prefix}-LOCAL-${dateStr}-${rand}`;
         }
 
-        // Menghitung jumlah record yang belum tersinkron (_synced !== true)
         function getPendingSyncData() {
             const pending = {
                 penjualan: getLocalStore('penjualan').filter(i => !i._synced),
@@ -858,7 +852,6 @@
             isSyncing = true;
             showToast("Memulai sinkronisasi data ke Google Sheets...", "warning");
 
-            // Format payload batch sync
             const payload = {
                 penjualan: pending.stores.penjualan,
                 pengeluaran: pending.stores.pengeluaran,
@@ -871,7 +864,6 @@
             isSyncing = false;
 
             if (res && res.syncedIds) {
-                // Tandai data lokal sebagai tersinkron
                 const syncedSet = new Set(res.syncedIds);
 
                 Object.keys(STORAGE_KEYS).forEach(key => {
@@ -896,16 +888,13 @@
             }
         }
 
-        // Utilities for thousand separator formatting
         const todayStr = new Date().toLocaleDateString('en-CA');
         
-        // Formatter angka pemisah ribuan Rupiah
         const formatRp = (num) => {
             const val = parseFloat(num) || 0;
             return 'Rp ' + val.toLocaleString('id-ID');
         };
 
-        // Real-time update live text pemisah ribuan di form
         function updateLiveRp(inputId, targetFmtId) {
             const inputVal = document.getElementById(inputId).value;
             const targetEl = document.getElementById(targetFmtId);
@@ -914,21 +903,40 @@
             }
         }
 
-        // Toast Helper
+        // Modern Animated Toast Notification
         function showToast(msg, type = 'success') {
             const toast = document.getElementById('toast');
             const toastMsg = document.getElementById('toastMessage');
+            const toastIconWrap = document.getElementById('toastIconWrap');
+            const toastIcon = document.getElementById('toastIcon');
+
             toastMsg.innerText = msg;
-            toast.className = `fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] px-6 py-3 rounded-full shadow-lg font-medium text-white flex items-center space-x-2 transition-all duration-300 ${type === 'success' ? 'bg-success' : type === 'warning' ? 'bg-warning' : 'bg-danger'}`;
+
+            // Style configuration based on notification type
+            if (type === 'success') {
+                toast.className = 'toast-hidden fixed top-6 left-1/2 transform -translate-x-1/2 z-[100] px-5 py-3 rounded-2xl font-medium text-white flex items-center space-x-3 text-sm bg-success shadow-xl';
+                toastIconWrap.className = 'w-6 h-6 rounded-full flex items-center justify-center bg-white/20 text-white';
+                toastIcon.setAttribute('data-lucide', 'check');
+            } else if (type === 'warning') {
+                toast.className = 'toast-hidden fixed top-6 left-1/2 transform -translate-x-1/2 z-[100] px-5 py-3 rounded-2xl font-medium text-white flex items-center space-x-3 text-sm bg-warning shadow-xl';
+                toastIconWrap.className = 'w-6 h-6 rounded-full flex items-center justify-center bg-white/20 text-white';
+                toastIcon.setAttribute('data-lucide', 'alert-circle');
+            } else {
+                toast.className = 'toast-hidden fixed top-6 left-1/2 transform -translate-x-1/2 z-[100] px-5 py-3 rounded-2xl font-medium text-white flex items-center space-x-3 text-sm bg-danger shadow-xl';
+                toastIconWrap.className = 'w-6 h-6 rounded-full flex items-center justify-center bg-white/20 text-white';
+                toastIcon.setAttribute('data-lucide', 'x-circle');
+            }
+            lucide.createIcons();
+
             toast.classList.remove('toast-hidden');
             toast.classList.add('toast-visible');
+
             setTimeout(() => {
                 toast.classList.remove('toast-visible');
                 toast.classList.add('toast-hidden');
-            }, 3000);
+            }, 3200);
         }
 
-        // Custom Modal Confirm Handler
         function openConfirm(title, msg, onConfirmFn) {
             document.getElementById('confirmTitle').innerText = title;
             document.getElementById('confirmMsg').innerText = msg;
@@ -940,7 +948,6 @@
             openModal('modalConfirmDelete');
         }
 
-        // Backend URL Helpers
         function getApiUrl() {
             return localStorage.getItem("warkop_api_url") || "";
         }
@@ -1028,7 +1035,6 @@
             const target = document.getElementById('page-' + pageId);
             if(target) target.classList.add('active');
 
-            // Desktop Nav highlight
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.remove('bg-blue-50', 'text-primary');
                 btn.classList.add('text-textSec');
@@ -1039,7 +1045,6 @@
                 dBtn.classList.add('bg-blue-50', 'text-primary');
             }
 
-            // Mobile Nav highlight
             ['dashboard', 'penjualan', 'piutang', 'laporan'].forEach(id => {
                 const m = document.getElementById('mob-' + id);
                 if(m) { m.classList.remove('text-primary'); m.classList.add('text-textSec'); }
@@ -1047,10 +1052,8 @@
             const mBtn = document.getElementById('mob-' + pageId);
             if(mBtn) { mBtn.classList.remove('text-textSec'); mBtn.classList.add('text-primary'); }
 
-            // Scroll window to top on page switch
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
-            // Load page data
             if(pageId === 'dashboard') loadDashboard();
             else if(pageId === 'penjualan') loadPenjualan();
             else if(pageId === 'piutang') loadPiutang();
@@ -1172,7 +1175,6 @@
             document.getElementById('dashPiutang').innerText = formatRp(totalPiutang);
             document.getElementById('dashLaba').innerText = formatRp(labaSederhana);
 
-            // Recent Penjualan
             const elPj = document.getElementById('dashRecentPenjualan');
             elPj.innerHTML = '';
             const recentPj = [...pjList].sort((a, b) => new Date(b.Tanggal) - new Date(a.Tanggal)).slice(0, 5);
@@ -1182,7 +1184,6 @@
                 });
             } else elPj.innerHTML = `<div class="text-center py-4 text-textSec text-xs">Belum ada data</div>`;
 
-            // Recent Pengeluaran
             const elPg = document.getElementById('dashRecentPengeluaran');
             elPg.innerHTML = '';
             const recentPg = [...pgList].sort((a, b) => new Date(b.Tanggal) - new Date(a.Tanggal)).slice(0, 5);
@@ -1192,7 +1193,6 @@
                 });
             } else elPg.innerHTML = `<div class="text-center py-4 text-textSec text-xs">Belum ada data</div>`;
 
-            // Top Piutang
             const elPt = document.getElementById('dashTopPiutang');
             elPt.innerHTML = '';
             const activePt = ptList.filter(pt => parseFloat(pt.Sisa) > 0).sort((a, b) => parseFloat(b.Sisa) - parseFloat(a.Sisa)).slice(0, 5);
@@ -1202,7 +1202,6 @@
                 });
             } else elPt.innerHTML = `<div class="text-center py-4 text-textSec text-xs">Tidak ada piutang</div>`;
 
-            // Trend Chart
             const dates = Object.keys(trendMap).sort();
             const values = dates.map(d => trendMap[d]);
             
@@ -1223,7 +1222,6 @@
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
 
-            // Payment Method Chart
             if(metodeChartInstance) metodeChartInstance.destroy();
             metodeChartInstance = new Chart(document.getElementById('metodeChart').getContext('2d'), {
                 type: 'doughnut',
@@ -1290,12 +1288,10 @@
                 _synced: false
             };
 
-            // Simpan ke localStore Penjualan
             const currentPj = getLocalStore('penjualan');
             currentPj.unshift(newRecord);
             setLocalStore('penjualan', currentPj);
 
-            // Jika Camidu -> buat record Piutang lokal
             if (metode === 'Camidu') {
                 const ptLocalId = generateLocalId('PT');
                 const newPiutang = {
@@ -1318,14 +1314,13 @@
             btn.innerText = "Simpan Penjualan";
             btn.disabled = false;
 
-            showToast("Penjualan tersimpan!");
+            showToast("Penjualan berhasil disimpan!");
             document.getElementById('formPenjualan').reset();
             updateLiveRp('pjNominal', 'pjNominalFmt');
             toggleCamidu('Cash');
             closeModal('modalPenjualan');
             loadPenjualan();
 
-            // Coba sinkron background jika terhubung
             if (getApiUrl()) triggerSyncData();
         }
 
@@ -1334,7 +1329,7 @@
                 let current = getLocalStore('penjualan');
                 current = current.filter(item => item._localId !== localId && item.ID !== localId);
                 setLocalStore('penjualan', current);
-                showToast("Penjualan berhasil dihapus");
+                showToast("Penjualan berhasil dihapus", "warning");
                 loadPenjualan();
             });
         }
@@ -1413,7 +1408,6 @@
                 ptRecord.Status = sisaBaru <= 0 ? 'Lunas' : 'Sebagian';
                 setLocalStore('piutang', currentPtList);
 
-                // Tambahkan riwayat pembayaran
                 const byLocalId = generateLocalId('BY');
                 const byRecord = {
                     _localId: byLocalId,
@@ -1432,7 +1426,7 @@
             btn.innerText = "Proses Pembayaran";
             btn.disabled = false;
 
-            showToast("Pembayaran piutang tersimpan!");
+            showToast("Pembayaran piutang berhasil dicatat!");
             closeModal('modalBayarPiutang');
             loadPiutang();
 
@@ -1486,7 +1480,7 @@
             btn.innerText = "Simpan Pengeluaran";
             btn.disabled = false;
 
-            showToast("Pengeluaran dicatat!");
+            showToast("Pengeluaran berhasil dicatat!");
             document.getElementById('formPengeluaran').reset();
             updateLiveRp('pgNominal', 'pgNominalFmt');
             closeModal('modalPengeluaran');
@@ -1500,7 +1494,7 @@
                 let current = getLocalStore('pengeluaran');
                 current = current.filter(item => item._localId !== localId && item.ID !== localId);
                 setLocalStore('pengeluaran', current);
-                showToast("Pengeluaran berhasil dihapus");
+                showToast("Pengeluaran berhasil dihapus", "warning");
                 loadPengeluaran();
             });
         }
@@ -1709,11 +1703,9 @@
             currentPemakaianData.forEach((item, idx) => {
                 const stokInput = parseFloat(document.getElementById(`pemInputStok_${idx}`).value) || 0;
                 
-                // Update stok akhir master lokal
                 const bb = bbList.find(b => b['Nama Bahan'] === item.namaBahan);
                 if (bb) bb['Stok Akhir'] = stokInput;
 
-                // Log pemakaian lokal
                 let pk = pkList.find(l => l.BulanTahun === targetPeriod && l['Nama Bahan'] === item.namaBahan);
                 const terpakai = Math.max(0, item.stokAwal + item.pembelian - stokInput);
                 const biaya = terpakai * item.hargaSatuan;
@@ -1813,7 +1805,7 @@
                 let current = getLocalStore('bahanBaku');
                 current = current.filter(item => item._localId !== localId && item.ID !== localId);
                 setLocalStore('bahanBaku', current);
-                showToast("Bahan baku berhasil dihapus");
+                showToast("Bahan baku berhasil dihapus", "warning");
                 loadBahanMaster();
             });
         }
@@ -1875,7 +1867,6 @@
             current.unshift(payload);
             setLocalStore('pembelianBahan', current);
 
-            // Tambah stok akhir master lokal
             const bbList = getLocalStore('bahanBaku');
             const bb = bbList.find(b => b['Nama Bahan'] === namaBahan);
             if (bb) {
@@ -1886,7 +1877,7 @@
             btn.innerText = "Simpan Pembelian";
             btn.disabled = false;
 
-            showToast("Pembelian bahan dicatat!");
+            showToast("Pembelian bahan berhasil dicatat!");
             document.getElementById('formPembelianBahan').reset();
             updateLiveRp('pbTotal', 'pbTotalFmt');
             closeModal('modalPembelianBahan');
@@ -1987,16 +1978,13 @@
             document.getElementById('lapStartDate').value = firstDay;
             document.getElementById('lapEndDate').value = todayStr;
 
-            // Set default pilihan bulan & tahun di pemakaian bahan
             const currentMonth = new Date().getMonth() + 1;
             const currentYear = new Date().getFullYear();
             if(document.getElementById('pemBulan')) document.getElementById('pemBulan').value = currentMonth;
             if(document.getElementById('pemTahun')) document.getElementById('pemTahun').value = currentYear;
 
-            // Buka Dashboard langsung (Offline-first)
             nav('dashboard');
 
-            // Coba tes koneksi jika URL terpasang
             if(url) testConnection();
             else setConnStatus(false);
         };
