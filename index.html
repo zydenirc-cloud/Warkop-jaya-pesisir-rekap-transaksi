@@ -73,7 +73,7 @@
 
         .modal-overlay { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px); }
         
-        /* Modern Clean Toast Animation */
+        /* Toast Animation */
         #toast { 
             transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1); 
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
@@ -86,6 +86,17 @@
             50% { opacity: 0.85; transform: scale(0.97); }
         }
         .animate-pulse-glow { animation: pulseGlow 2s infinite ease-in-out; }
+
+        /* Print Styling for Export PDF */
+        @media print {
+            header, aside, .bottom-nav, .fab, button, #bannerSyncPending, .modal-overlay { display: none !important; }
+            main { margin-left: 0 !important; padding: 0 !important; }
+            body { background-color: #FFFFFF !important; color: #000000 !important; }
+            .page { display: block !important; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            .card-print { border: 1px solid #E5E7EB !important; shadow: none !important; }
+        }
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -475,11 +486,21 @@
                     <span class="text-textSec">s/d</span>
                     <input type="date" id="lapEndDate" class="border rounded-lg p-1.5 outline-none">
                     <button onclick="loadLaporan()" class="bg-primary text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-blue-800 transition">Filter</button>
+                    <button onclick="exportPdfLaporan()" class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center space-x-1">
+                        <i data-lucide="file-text" class="w-3.5 h-3.5 mr-1"></i> Export PDF
+                    </button>
                 </div>
             </div>
 
+            <!-- Header Laporan cetak -->
+            <div class="hidden print-only mb-6 text-center border-b pb-4">
+                <h1 class="text-2xl font-bold text-primary" id="printHeaderShop">Warkop Jaya Pesisir</h1>
+                <p class="text-sm text-gray-600">Laporan Rekapitulasi Keuangan Keuangan</p>
+                <p class="text-xs text-gray-500 mt-1" id="printHeaderPeriod">Periode: -</p>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm card-print">
                     <h3 class="font-bold text-lg text-primary mb-4 flex items-center"><i data-lucide="arrow-down-right" class="w-5 h-5 mr-2"></i> Pendapatan (Omzet)</h3>
                     <div class="space-y-3 text-sm">
                         <div class="flex justify-between"><span class="text-textSec">Penjualan Tunai (Cash)</span><span class="font-semibold" id="lapCash">Rp 0</span></div>
@@ -490,7 +511,7 @@
                     </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm card-print">
                     <h3 class="font-bold text-lg text-danger mb-4 flex items-center"><i data-lucide="arrow-up-right" class="w-5 h-5 mr-2"></i> Pengeluaran & Beban</h3>
                     <div class="space-y-3 text-sm">
                         <div class="flex justify-between"><span class="text-textSec">Beban Pengeluaran Operasional</span><span class="font-semibold" id="lapPengeluaran">Rp 0</span></div>
@@ -502,12 +523,24 @@
                 </div>
             </div>
 
-            <div class="bg-gradient-to-r from-[#0D21A1] to-[#1E3A8A] text-white p-6 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="bg-gradient-to-r from-[#0D21A1] to-[#1E3A8A] text-white p-6 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-center gap-4 card-print">
                 <div>
                     <h3 class="text-white/80 font-medium mb-1 text-sm">Laba Bersih Sederhana</h3>
                     <p class="text-xs text-white/60">Rumus: Omzet - Pengeluaran Operasional - Biaya Bahan Terpakai</p>
                 </div>
                 <div class="text-3xl md:text-4xl font-bold tracking-tight" id="lapLabaBersih">Rp 0</div>
+            </div>
+
+            <!-- Signatures on Print -->
+            <div class="hidden print-only mt-12 grid grid-cols-2 text-center text-xs">
+                <div>
+                    <p class="mb-12">Dibuat oleh,</p>
+                    <p class="font-bold border-t w-32 mx-auto pt-1">Pengelola Warkop</p>
+                </div>
+                <div>
+                    <p class="mb-12">Disetujui oleh,</p>
+                    <p class="font-bold border-t w-32 mx-auto pt-1">Owner Warkop</p>
+                </div>
             </div>
         </section>
 
@@ -548,6 +581,23 @@
                         <button onclick="clearApiUrl()" class="w-full bg-red-50 hover:bg-red-100 text-danger py-2.5 rounded-xl font-semibold transition text-xs">Hapus URL Backend</button>
                     </div>
                 </div>
+
+                <!-- Backup & Restore Data Local -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm md:col-span-2">
+                    <h3 class="font-bold text-lg mb-2 flex items-center text-primary"><i data-lucide="hard-drive" class="w-5 h-5 mr-2"></i> Backup & Restore Data Local</h3>
+                    <p class="text-xs text-textSec mb-4">
+                        Unduh atau pulihkan salinan seluruh transaksi lokal untuk mencegah kehilangan data perangkat.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button onclick="exportBackupJson()" class="flex-1 bg-blue-50 border border-blue-200 text-primary hover:bg-blue-100 py-3 rounded-xl font-bold text-xs transition flex items-center justify-center">
+                            <i data-lucide="download" class="w-4 h-4 mr-2"></i> Download Backup Data (.json)
+                        </button>
+                        <label class="flex-1 bg-gray-50 border border-gray-200 text-textMain hover:bg-gray-100 py-3 rounded-xl font-bold text-xs transition flex items-center justify-center cursor-pointer">
+                            <i data-lucide="upload" class="w-4 h-4 mr-2"></i> Restore Data dari File (.json)
+                            <input type="file" id="importJsonInput" accept=".json" onchange="importBackupJson(event)" class="hidden">
+                        </label>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -565,7 +615,7 @@
     <!-- Floating Action Button Mobile -->
     <div class="fab md:hidden" onclick="openModal('modalMenuAction')"><i data-lucide="plus" class="w-7 h-7"></i></div>
 
-    <!-- Modal: Action Menu Mobile (Centered Icons) -->
+    <!-- Modal: Action Menu Mobile -->
     <div id="modalMenuAction" class="fixed inset-0 modal-overlay hidden z-50 flex items-end justify-center pb-20 md:items-center md:pb-0">
         <div class="bg-white rounded-t-3xl md:rounded-2xl w-full max-w-sm p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-6"><h3 class="font-bold text-lg">Tambah Data Baru</h3><button onclick="closeModal('modalMenuAction')"><i data-lucide="x" class="w-5 h-5"></i></button></div>
@@ -591,7 +641,7 @@
         <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl text-center space-y-4">
             <div class="w-12 h-12 bg-red-100 text-danger rounded-full flex items-center justify-center mx-auto"><i data-lucide="alert-triangle" class="w-6 h-6"></i></div>
             <h3 class="font-bold text-lg text-textMain" id="confirmTitle">Hapus Data?</h3>
-            <p class="text-xs text-textSec" id="confirmMsg">Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.</p>
+            <p class="text-xs text-textSec" id="confirmMsg">Apakah Anda yakin ingin menghapus data ini?</p>
             <div class="flex space-x-3 pt-2">
                 <button onclick="closeModal('modalConfirmDelete')" class="flex-1 bg-gray-100 text-textMain py-2.5 rounded-xl text-xs font-bold hover:bg-gray-200">Batal</button>
                 <button id="btnDoDelete" class="flex-1 bg-danger text-white py-2.5 rounded-xl text-xs font-bold hover:bg-red-600">Ya, Hapus</button>
@@ -852,39 +902,75 @@
             isSyncing = true;
             showToast("Memulai sinkronisasi data ke Google Sheets...", "warning");
 
+            // Normalize offline payload to camelCase for API
             const payload = {
-                penjualan: pending.stores.penjualan,
-                pengeluaran: pending.stores.pengeluaran,
-                pembayaranPiutang: pending.stores.pembayaranPiutang,
-                pembelianBahan: pending.stores.pembelianBahan,
-                bahanBaku: pending.stores.bahanBaku
+                penjualan: pending.stores.penjualan.map(p => ({
+                    _localId: p._localId,
+                    tanggal: p.Tanggal,
+                    nominal: p.Nominal,
+                    metode: p.Metode,
+                    namaPelanggan: p['Nama Pelanggan']
+                })),
+                pengeluaran: pending.stores.pengeluaran.map(p => ({
+                    _localId: p._localId,
+                    tanggal: p.Tanggal,
+                    kategori: p.Kategori,
+                    keterangan: p.Keterangan,
+                    nominal: p.Nominal
+                })),
+                pembayaranPiutang: pending.stores.pembayaranPiutang.map(p => ({
+                    _localId: p._localId,
+                    idPiutang: p.idPiutang,
+                    tanggal: p.tanggal,
+                    namaPelanggan: p.namaPelanggan,
+                    nominal: p.nominal,
+                    metode: p.metode
+                })),
+                pembelianBahan: pending.stores.pembelianBahan.map(p => ({
+                    _localId: p._localId,
+                    tanggal: p.Tanggal,
+                    namaBahan: p['Nama Bahan'],
+                    jumlah: p.Jumlah,
+                    hargaSatuan: p['Harga Satuan'],
+                    supplier: p.Supplier
+                })),
+                bahanBaku: pending.stores.bahanBaku.map(p => ({
+                    _localId: p._localId,
+                    namaBahan: p['Nama Bahan'],
+                    satuan: p.Satuan,
+                    hargaSatuan: p['Harga Satuan'],
+                    stokAwal: p['Stok Awal'],
+                    stokAkhir: p['Stok Akhir']
+                }))
             };
 
             const res = await apiRequest('batchSync', payload);
             isSyncing = false;
 
-            if (res && res.syncedIds) {
-                const syncedSet = new Set(res.syncedIds);
+            if (res && (res.syncedIds || (res.data && res.data.syncedIds))) {
+                const syncedArray = res.syncedIds || res.data.syncedIds || [];
+                const syncedSet = new Set(syncedArray);
+
+                // Fallback: If backend synced successfully but didn't return list, mark all synced
+                const markAll = syncedArray.length === 0;
 
                 Object.keys(STORAGE_KEYS).forEach(key => {
-                    if (STORAGE_KEYS[key]) {
-                        const items = getLocalStore(key);
-                        let updated = false;
-                        items.forEach(item => {
-                            if (item._localId && syncedSet.has(item._localId)) {
-                                item._synced = true;
-                                updated = true;
-                            }
-                        });
-                        if (updated) setLocalStore(key, items);
-                    }
+                    const items = getLocalStore(key);
+                    let updated = false;
+                    items.forEach(item => {
+                        if (!item._synced && (markAll || (item._localId && syncedSet.has(item._localId)))) {
+                            item._synced = true;
+                            updated = true;
+                        }
+                    });
+                    if (updated) setLocalStore(key, items);
                 });
 
-                showToast(`✓ Berhasil menyinkronkan ${res.syncedCount || pending.totalCount} transaksi!`, "success");
+                showToast(`✓ Berhasil menyinkronkan data ke Google Sheets!`, "success");
                 updatePendingSyncBadge();
                 loadDashboard();
             } else {
-                showToast("Sinkronisasi gagal. Data tetap aman tersimpan secara lokal.", "error");
+                showToast("Gagal sinkron. Data tersimpan lokal dengan aman.", "error");
             }
         }
 
@@ -903,7 +989,6 @@
             }
         }
 
-        // Modern Animated Toast Notification
         function showToast(msg, type = 'success') {
             const toast = document.getElementById('toast');
             const toastMsg = document.getElementById('toastMessage');
@@ -912,7 +997,6 @@
 
             toastMsg.innerText = msg;
 
-            // Style configuration based on notification type
             if (type === 'success') {
                 toast.className = 'toast-hidden fixed top-6 left-1/2 transform -translate-x-1/2 z-[100] px-5 py-3 rounded-2xl font-medium text-white flex items-center space-x-3 text-sm bg-success shadow-xl';
                 toastIconWrap.className = 'w-6 h-6 rounded-full flex items-center justify-center bg-white/20 text-white';
@@ -985,6 +1069,24 @@
             if (!apiUrl) {
                 setConnStatus(false);
                 return null;
+            }
+
+            // POST mode for batchSync / saving large objects
+            if (action === 'batchSync' || action.startsWith('simpan')) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({ action: action, data: dataObj })
+                    });
+                    const resJson = await response.json();
+                    if (resJson && resJson.status === 'success') {
+                        setConnStatus(true);
+                        return resJson.data !== undefined ? resJson.data : true;
+                    }
+                } catch (e) {
+                    // Fall back to JSONP script tag below if POST fails
+                }
             }
 
             return new Promise((resolve) => {
@@ -1103,6 +1205,70 @@
             document.getElementById('dashShopName').innerText = name;
             document.getElementById('dashWelcome').innerText = `Selamat datang, ${owner || 'Owner'}`;
             showToast("Identitas Warkop tersimpan!");
+        }
+
+        function exportBackupJson() {
+            const backupObj = {
+                version: "1.0",
+                timestamp: new Date().toISOString(),
+                warkop_name: localStorage.getItem("warkop_name") || "Warkop Jaya Pesisir",
+                warkop_owner: localStorage.getItem("warkop_owner") || "",
+                data: {}
+            };
+
+            Object.keys(STORAGE_KEYS).forEach(key => {
+                backupObj.data[key] = getLocalStore(key);
+            });
+
+            const jsonStr = JSON.stringify(backupObj, null, 2);
+            const blob = new Blob([jsonStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `Warkop_Jaya_Pesisir_Backup_${todayStr}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast("✓ Backup data berhasil diunduh!");
+        }
+
+        function importBackupJson(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (imported && imported.data) {
+                        openConfirm("Restore Data?", "Seluruh data lokal saat ini akan diganti dengan file backup. Lanjutkan?", () => {
+                            Object.keys(imported.data).forEach(key => {
+                                if (STORAGE_KEYS[key]) {
+                                    localStorage.setItem(STORAGE_KEYS[key], JSON.stringify(imported.data[key]));
+                                }
+                            });
+                            showToast("✓ Restore data berhasil!", "success");
+                            updatePendingSyncBadge();
+                            loadDashboard();
+                        });
+                    } else {
+                        showToast("Format file JSON backup tidak valid", "error");
+                    }
+                } catch(err) {
+                    showToast("Gagal membaca file JSON", "error");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function exportPdfLaporan() {
+            const startInput = document.getElementById('lapStartDate').value || '-';
+            const endInput = document.getElementById('lapEndDate').value || '-';
+            const shopName = localStorage.getItem("warkop_name") || "Warkop Jaya Pesisir";
+
+            document.getElementById('printHeaderShop').innerText = shopName;
+            document.getElementById('printHeaderPeriod').innerText = `Periode: ${startInput} s/d ${endInput}`;
+
+            window.print();
         }
 
         let dashFilterMode = 'hari';
@@ -1362,7 +1528,7 @@
 
             const history = getLocalStore('pembayaranPiutang');
             let totalBayar = 0;
-            history.forEach(h => totalBayar += parseFloat(h.Nominal || 0));
+            history.forEach(h => totalBayar += parseFloat(h.Nominal || h.nominal || 0));
             document.getElementById('statTotalBayarPiutang').innerText = formatRp(totalBayar);
 
             if(!activePiutang.length) {
@@ -1401,7 +1567,7 @@
             const ptRecord = currentPtList.find(p => (p._localId === targetId || p.ID === targetId));
 
             if (ptRecord) {
-                const sisaBaru = parseFloat(ptRecord.Sisa) - nom;
+                const sisaBaru = Math.max(0, parseFloat(ptRecord.Sisa) - nom);
                 const dibayarBaru = parseFloat(ptRecord['Total Dibayar'] || 0) + nom;
                 ptRecord.Sisa = sisaBaru;
                 ptRecord['Total Dibayar'] = dibayarBaru;
