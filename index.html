@@ -77,6 +77,13 @@
         #toast { transition: transform 0.3s ease-in-out, opacity 0.3s; }
         .toast-hidden { transform: translateY(-100%); opacity: 0; pointer-events: none; }
         .toast-visible { transform: translateY(0); opacity: 1; }
+        
+        /* Pulse Animation for Sync Badge */
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.85; transform: scale(0.97); }
+        }
+        .animate-pulse-glow { animation: pulseGlow 2s infinite ease-in-out; }
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -88,26 +95,34 @@
     </div>
 
     <!-- Top Header -->
-    <header class="fixed top-0 w-full bg-white shadow-sm z-30 h-16 flex items-center justify-between px-4 md:px-8 border-b border-gray-100">
-        <div class="flex items-center space-x-3">
+    <header class="fixed top-0 w-full bg-white shadow-sm z-30 h-16 flex items-center justify-between px-3 md:px-8 border-b border-gray-100">
+        <div class="flex items-center space-x-2.5">
             <div class="w-9 h-9 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-sm">W</div>
             <div>
-                <h1 class="font-bold text-base md:text-lg text-primary leading-tight" id="headerShopName">Warkop Jaya Pesisir</h1>
-                <p class="text-[11px] text-textSec hidden md:block">Sistem Rekap Keuangan Digital</p>
+                <h1 class="font-bold text-sm md:text-lg text-primary leading-tight" id="headerShopName">Warkop Jaya Pesisir</h1>
+                <p class="text-[10px] md:text-[11px] text-textSec hidden sm:block">Sistem Rekap Keuangan Digital</p>
             </div>
         </div>
         
-        <div class="flex items-center space-x-3 text-sm">
-            <div class="flex items-center bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-full">
-                <div id="connStatusDot" class="w-2.5 h-2.5 rounded-full bg-danger mr-2"></div>
-                <span id="connStatusText" class="font-medium text-xs text-textSec">Tidak Terhubung</span>
+        <div class="flex items-center space-x-2 text-xs">
+            <!-- Indikator Pending Sync -->
+            <button onclick="triggerSyncData()" id="btnSyncHeader" class="hidden items-center bg-amber-50 border border-amber-200 text-amber-700 px-2.5 py-1.5 rounded-full font-semibold hover:bg-amber-100 transition animate-pulse-glow">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 mr-1.5 animate-spin"></i>
+                <span id="syncPendingCount">0 Offline</span>
+            </button>
+
+            <!-- Status Koneksi -->
+            <div class="flex items-center bg-gray-50 border border-gray-200 px-2.5 py-1.5 rounded-full">
+                <div id="connStatusDot" class="w-2.5 h-2.5 rounded-full bg-danger mr-1.5"></div>
+                <span id="connStatusText" class="font-medium text-[11px] md:text-xs text-textSec">Lokal</span>
             </div>
-            <button onclick="nav('pengaturan')" class="p-2 bg-gray-100 rounded-full md:hidden hover:bg-gray-200 text-textSec"><i data-lucide="settings" class="w-5 h-5"></i></button>
+            
+            <button onclick="nav('pengaturan')" class="p-2 bg-gray-100 rounded-full md:hidden hover:bg-gray-200 text-textSec"><i data-lucide="settings" class="w-4 h-4"></i></button>
         </div>
     </header>
 
-    <!-- Desktop Sidebar -->
-    <aside class="sidebar fixed top-16 left-0 h-[calc(100vh-4rem)] w-64 bg-white border-r border-gray-100 z-20 flex flex-col pt-6 pb-4 overflow-y-auto">
+    <!-- Desktop Sidebar (Hidden on Mobile with hidden md:flex to prevent overlapping bug) -->
+    <aside class="hidden md:flex sidebar fixed top-16 left-0 h-[calc(100vh-4rem)] w-64 bg-white border-r border-gray-100 z-20 flex-col pt-6 pb-4 overflow-y-auto">
         <div class="px-6 mb-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Menu Utama</div>
         <nav class="flex flex-col space-y-1 px-3 mb-6">
             <button onclick="nav('dashboard')" id="nav-dashboard" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-textSec hover:bg-gray-50 nav-btn transition"><i data-lucide="home" class="w-5 h-5"></i><span class="font-medium text-sm">Dashboard</span></button>
@@ -123,11 +138,25 @@
         </nav>
     </aside>
 
-    <!-- Main Content Container (pt-20 md:pt-24 guarantees no buttons are hidden under header) -->
+    <!-- Main Content Container -->
     <main class="main-content md:ml-64 pt-20 md:pt-24 pb-28 md:pb-12 px-4 md:px-8 min-h-screen">
         
         <!-- ==================== PAGE: DASHBOARD ==================== -->
         <section id="page-dashboard" class="page">
+            <!-- Offline Sync Banner -->
+            <div id="bannerSyncPending" class="hidden mb-6 bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4 rounded-2xl shadow-md flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div class="flex items-center space-x-3">
+                    <div class="p-2 bg-white/20 rounded-xl"><i data-lucide="wifi-off" class="w-6 h-6"></i></div>
+                    <div>
+                        <h4 class="font-bold text-sm">Ada Transaksi Offline Belum Disinkron</h4>
+                        <p class="text-xs text-white/80" id="bannerSyncText">0 data tersimpan secara lokal dan siap diunggah ke Google Sheets.</p>
+                    </div>
+                </div>
+                <button onclick="triggerSyncData()" class="bg-white text-orange-700 hover:bg-orange-50 px-4 py-2 rounded-xl font-bold text-xs shadow-sm transition whitespace-nowrap self-end sm:self-auto flex items-center">
+                    <i data-lucide="upload-cloud" class="w-4 h-4 mr-1.5"></i> Sinkronkan Sekarang
+                </button>
+            </div>
+
             <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <div>
                     <h2 class="text-2xl font-bold text-textMain" id="dashWelcome">Selamat datang, Owner</h2>
@@ -729,6 +758,144 @@
         let trendChartInstance = null;
         let metodeChartInstance = null;
 
+        // =========================================================================
+        // OFFLINE-FIRST & LOCAL STORAGE ENGINE
+        // =========================================================================
+        const STORAGE_KEYS = {
+            penjualan: 'warkop_db_penjualan',
+            piutang: 'warkop_db_piutang',
+            pembayaranPiutang: 'warkop_db_pembayaran_piutang',
+            pengeluaran: 'warkop_db_pengeluaran',
+            bahanBaku: 'warkop_db_bahan_baku',
+            pembelianBahan: 'warkop_db_pembelian_bahan',
+            pemakaianBahan: 'warkop_db_pemakaian_bahan'
+        };
+
+        function getLocalStore(key) {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEYS[key])) || [];
+            } catch(e) {
+                return [];
+            }
+        }
+
+        function setLocalStore(key, dataArray) {
+            localStorage.setItem(STORAGE_KEYS[key], JSON.stringify(dataArray));
+            updatePendingSyncBadge();
+        }
+
+        function generateLocalId(prefix) {
+            const dateStr = new Date().toISOString().replace(/[-:T.]/g, '').substring(0, 12);
+            const rand = Math.floor(1000 + Math.random() * 9000);
+            return `${prefix}-LOCAL-${dateStr}-${rand}`;
+        }
+
+        // Menghitung jumlah record yang belum tersinkron (_synced !== true)
+        function getPendingSyncData() {
+            const pending = {
+                penjualan: getLocalStore('penjualan').filter(i => !i._synced),
+                pengeluaran: getLocalStore('pengeluaran').filter(i => !i._synced),
+                pembayaranPiutang: getLocalStore('pembayaranPiutang').filter(i => !i._synced),
+                pembelianBahan: getLocalStore('pembelianBahan').filter(i => !i._synced),
+                bahanBaku: getLocalStore('bahanBaku').filter(i => !i._synced)
+            };
+
+            const totalCount = pending.penjualan.length + 
+                               pending.pengeluaran.length + 
+                               pending.pembayaranPiutang.length + 
+                               pending.pembelianBahan.length + 
+                               pending.bahanBaku.length;
+
+            return { stores: pending, totalCount: totalCount };
+        }
+
+        function updatePendingSyncBadge() {
+            const pending = getPendingSyncData();
+            const btnHeader = document.getElementById('btnSyncHeader');
+            const countText = document.getElementById('syncPendingCount');
+            const banner = document.getElementById('bannerSyncPending');
+            const bannerText = document.getElementById('bannerSyncText');
+
+            if (pending.totalCount > 0) {
+                if (btnHeader) {
+                    btnHeader.classList.remove('hidden');
+                    btnHeader.classList.add('flex');
+                }
+                if (countText) countText.innerText = `${pending.totalCount} Offline`;
+                if (banner) {
+                    banner.classList.remove('hidden');
+                    banner.classList.add('flex');
+                }
+                if (bannerText) bannerText.innerText = `${pending.totalCount} transaksi tersimpan lokal dan siap diunggah ke Google Sheets.`;
+            } else {
+                if (btnHeader) {
+                    btnHeader.classList.add('hidden');
+                    btnHeader.classList.remove('flex');
+                }
+                if (banner) {
+                    banner.classList.add('hidden');
+                    banner.classList.remove('flex');
+                }
+            }
+        }
+
+        let isSyncing = false;
+        async function triggerSyncData() {
+            const apiUrl = getApiUrl();
+            if (!apiUrl) {
+                showToast("URL Backend belum dikonfigurasi!", "warning");
+                nav('pengaturan');
+                return;
+            }
+
+            const pending = getPendingSyncData();
+            if (pending.totalCount === 0) {
+                showToast("Semua data sudah tersinkronisasi!", "success");
+                return;
+            }
+
+            if (isSyncing) return;
+            isSyncing = true;
+            showToast("Memulai sinkronisasi data ke Google Sheets...", "warning");
+
+            // Format payload batch sync
+            const payload = {
+                penjualan: pending.stores.penjualan,
+                pengeluaran: pending.stores.pengeluaran,
+                pembayaranPiutang: pending.stores.pembayaranPiutang,
+                pembelianBahan: pending.stores.pembelianBahan,
+                bahanBaku: pending.stores.bahanBaku
+            };
+
+            const res = await apiRequest('batchSync', payload);
+            isSyncing = false;
+
+            if (res && res.syncedIds) {
+                // Tandai data lokal sebagai tersinkron
+                const syncedSet = new Set(res.syncedIds);
+
+                Object.keys(STORAGE_KEYS).forEach(key => {
+                    if (STORAGE_KEYS[key]) {
+                        const items = getLocalStore(key);
+                        let updated = false;
+                        items.forEach(item => {
+                            if (item._localId && syncedSet.has(item._localId)) {
+                                item._synced = true;
+                                updated = true;
+                            }
+                        });
+                        if (updated) setLocalStore(key, items);
+                    }
+                });
+
+                showToast(`✓ Berhasil menyinkronkan ${res.syncedCount || pending.totalCount} transaksi!`, "success");
+                updatePendingSyncBadge();
+                loadDashboard();
+            } else {
+                showToast("Sinkronisasi gagal. Data tetap aman tersimpan secara lokal.", "error");
+            }
+        }
+
         // Utilities for thousand separator formatting
         const todayStr = new Date().toLocaleDateString('en-CA');
         
@@ -802,7 +969,7 @@
                 txt.innerText = "Terhubung";
             } else {
                 dot.className = "w-2.5 h-2.5 rounded-full bg-danger mr-2";
-                txt.innerText = "Tidak Terhubung";
+                txt.innerText = "Lokal / Offline";
             }
         }
 
@@ -822,7 +989,7 @@
                         setConnStatus(true);
                         resolve(response.data !== undefined ? response.data : true);
                     } else {
-                        showToast(response ? response.message : "Error API", "error");
+                        setConnStatus(false);
                         resolve(null);
                     }
                 };
@@ -837,7 +1004,6 @@
                     delete window[callbackName];
                     if(script.parentNode) document.body.removeChild(script);
                     setConnStatus(false);
-                    showToast("✕ Backend tidak dapat dihubungi.", "error");
                     resolve(null);
                 };
                 document.body.appendChild(script);
@@ -846,11 +1012,14 @@
 
         async function testConnection() {
             const btn = document.getElementById('btnTestConn');
-            btn.innerText = "Menguji...";
+            if (btn) btn.innerText = "Menguji...";
             const res = await apiRequest('testConnection');
-            btn.innerText = "Test Koneksi";
+            if (btn) btn.innerText = "Test Koneksi";
             if (res) {
-                showToast("✓ Backend terhubung.");
+                showToast("✓ Backend terhubung ke Google Sheets.");
+                triggerSyncData();
+            } else {
+                showToast("Aplikasi berjalan dalam mode Lokal (Offline)", "warning");
             }
         }
 
@@ -880,10 +1049,6 @@
 
             // Scroll window to top on page switch
             window.scrollTo({ top: 0, behavior: 'smooth' });
-
-            if (!getApiUrl() && pageId !== 'pengaturan') {
-                showToast("Backend belum dikonfigurasi. Silakan buka Pengaturan.", "warning");
-            }
 
             // Load page data
             if(pageId === 'dashboard') loadDashboard();
@@ -950,28 +1115,79 @@
         }
 
         async function loadDashboard() {
-            const data = await apiRequest('getDashboardData', { filter: dashFilterMode });
-            if(!data) return;
+            const pjList = getLocalStore('penjualan');
+            const ptList = getLocalStore('piutang');
+            const pgList = getLocalStore('pengeluaran');
+            const pbList = getLocalStore('pembelianBahan');
 
-            document.getElementById('dashPenHariIni').innerText = formatRp(data.penjualanHariIni);
-            document.getElementById('dashPenBulanIni').innerText = formatRp(data.penjualanBulanIni);
-            document.getElementById('dashPiutang').innerText = formatRp(data.totalPiutang);
-            document.getElementById('dashLaba').innerText = formatRp(data.labaSederhana);
+            const now = new Date();
+            const todayStr = now.toLocaleDateString('en-CA');
+            const currentMonthStr = todayStr.substring(0, 7);
+
+            let penHariIni = 0;
+            let penBulanIni = 0;
+            let totalCash = 0, totalQRIS = 0, totalCamidu = 0;
+            let trendMap = {};
+
+            pjList.forEach(p => {
+                const nom = parseFloat(p.Nominal) || 0;
+                const tgl = String(p.Tanggal).substring(0, 10);
+
+                if (tgl === todayStr) penHariIni += nom;
+                if (tgl.substring(0, 7) === currentMonthStr) penBulanIni += nom;
+
+                if (p.Metode === 'Cash') totalCash += nom;
+                else if (p.Metode === 'QRIS') totalQRIS += nom;
+                else if (p.Metode === 'Camidu') totalCamidu += nom;
+
+                trendMap[tgl] = (trendMap[tgl] || 0) + nom;
+            });
+
+            let totalPiutang = 0;
+            ptList.forEach(pt => {
+                const sisa = parseFloat(pt.Sisa) || 0;
+                if (sisa > 0) totalPiutang += sisa;
+            });
+
+            let pengBulanIni = 0;
+            pgList.forEach(pg => {
+                const tgl = String(pg.Tanggal).substring(0, 10);
+                if (tgl.substring(0, 7) === currentMonthStr) {
+                    pengBulanIni += parseFloat(pg.Nominal) || 0;
+                }
+            });
+
+            let pembBulanIni = 0;
+            pbList.forEach(pb => {
+                const tgl = String(pb.Tanggal).substring(0, 10);
+                if (tgl.substring(0, 7) === currentMonthStr) {
+                    pembBulanIni += parseFloat(pb.Total) || 0;
+                }
+            });
+
+            const labaSederhana = penBulanIni - pengBulanIni - pembBulanIni;
+
+            document.getElementById('dashPenHariIni').innerText = formatRp(penHariIni);
+            document.getElementById('dashPenBulanIni').innerText = formatRp(penBulanIni);
+            document.getElementById('dashPiutang').innerText = formatRp(totalPiutang);
+            document.getElementById('dashLaba').innerText = formatRp(labaSederhana);
 
             // Recent Penjualan
             const elPj = document.getElementById('dashRecentPenjualan');
             elPj.innerHTML = '';
-            if(data.recentPenjualan && data.recentPenjualan.length) {
-                data.recentPenjualan.forEach(p => {
-                    elPj.innerHTML += `<div class="flex justify-between items-center text-xs p-2 rounded-xl bg-gray-50"><div><div class="font-bold text-textMain">${formatRp(p.Nominal)}</div><div class="text-textSec">${p['Nama Pelanggan'] !== '-' ? p['Nama Pelanggan'] : p.Metode}</div></div><span class="px-2 py-0.5 rounded text-[10px] font-bold ${p.Metode==='Cash'?'bg-green-100 text-green-700':p.Metode==='QRIS'?'bg-blue-100 text-blue-700':'bg-orange-100 text-orange-700'}">${p.Metode}</span></div>`;
+            const recentPj = [...pjList].sort((a, b) => new Date(b.Tanggal) - new Date(a.Tanggal)).slice(0, 5);
+            if(recentPj.length) {
+                recentPj.forEach(p => {
+                    elPj.innerHTML += `<div class="flex justify-between items-center text-xs p-2 rounded-xl bg-gray-50"><div><div class="font-bold text-textMain">${formatRp(p.Nominal)}</div><div class="text-textSec">${p['Nama Pelanggan'] && p['Nama Pelanggan'] !== '-' ? p['Nama Pelanggan'] : p.Metode}</div></div><span class="px-2 py-0.5 rounded text-[10px] font-bold ${p.Metode==='Cash'?'bg-green-100 text-green-700':p.Metode==='QRIS'?'bg-blue-100 text-blue-700':'bg-orange-100 text-orange-700'}">${p.Metode}</span></div>`;
                 });
             } else elPj.innerHTML = `<div class="text-center py-4 text-textSec text-xs">Belum ada data</div>`;
 
             // Recent Pengeluaran
             const elPg = document.getElementById('dashRecentPengeluaran');
             elPg.innerHTML = '';
-            if(data.recentPengeluaran && data.recentPengeluaran.length) {
-                data.recentPengeluaran.forEach(pg => {
+            const recentPg = [...pgList].sort((a, b) => new Date(b.Tanggal) - new Date(a.Tanggal)).slice(0, 5);
+            if(recentPg.length) {
+                recentPg.forEach(pg => {
                     elPg.innerHTML += `<div class="flex justify-between items-center text-xs p-2 rounded-xl bg-gray-50"><div><div class="font-bold text-danger">${formatRp(pg.Nominal)}</div><div class="text-textSec">${pg.Kategori}</div></div><span class="text-[10px] text-textSec">${String(pg.Tanggal).substring(0,10)}</span></div>`;
                 });
             } else elPg.innerHTML = `<div class="text-center py-4 text-textSec text-xs">Belum ada data</div>`;
@@ -979,15 +1195,16 @@
             // Top Piutang
             const elPt = document.getElementById('dashTopPiutang');
             elPt.innerHTML = '';
-            if(data.topPiutang && data.topPiutang.length) {
-                data.topPiutang.forEach(pt => {
+            const activePt = ptList.filter(pt => parseFloat(pt.Sisa) > 0).sort((a, b) => parseFloat(b.Sisa) - parseFloat(a.Sisa)).slice(0, 5);
+            if(activePt.length) {
+                activePt.forEach(pt => {
                     elPt.innerHTML += `<div class="flex justify-between items-center text-xs p-2 rounded-xl bg-orange-50/50 border border-orange-100"><div><div class="font-bold text-textMain">${pt['Nama Pelanggan']}</div><div class="text-textSec">Total: ${formatRp(pt['Total Hutang'])}</div></div><div class="font-bold text-danger">${formatRp(pt.Sisa)}</div></div>`;
                 });
             } else elPt.innerHTML = `<div class="text-center py-4 text-textSec text-xs">Tidak ada piutang</div>`;
 
             // Trend Chart
-            const dates = Object.keys(data.grafikPenjualanTrend || {}).sort();
-            const values = dates.map(d => data.grafikPenjualanTrend[d]);
+            const dates = Object.keys(trendMap).sort();
+            const values = dates.map(d => trendMap[d]);
             
             if(trendChartInstance) trendChartInstance.destroy();
             trendChartInstance = new Chart(document.getElementById('trendChart').getContext('2d'), {
@@ -1013,16 +1230,20 @@
                 data: {
                     labels: ['Cash', 'QRIS', 'Camidu'],
                     datasets: [{
-                        data: [data.grafikMetodePembayaran.Cash || 0, data.grafikMetodePembayaran.QRIS || 0, data.grafikMetodePembayaran.Camidu || 0],
+                        data: [totalCash, totalQRIS, totalCamidu],
                         backgroundColor: ['#16A34A', '#0D21A1', '#F59E0B']
                     }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, cutout: '70%' }
             });
+
+            updatePendingSyncBadge();
         }
 
         async function loadPenjualan() {
-            const data = await apiRequest('getPenjualan');
+            const data = getLocalStore('penjualan');
+            data.sort((a, b) => new Date(b.Tanggal) - new Date(a.Tanggal));
+
             const tb = document.getElementById('tablePenjualan');
             const cd = document.getElementById('cardPenjualan');
             tb.innerHTML = ''; cd.innerHTML = '';
@@ -1035,10 +1256,12 @@
 
             data.forEach(p => {
                 const bCol = p.Metode === 'Cash' ? 'bg-green-50 text-success border-green-200' : p.Metode === 'QRIS' ? 'bg-blue-50 text-primary border-blue-200' : 'bg-orange-50 text-warning border-orange-200';
+                const syncBadge = p._synced ? '' : '<span class="text-[9px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded ml-1">Offline</span>';
+                const localId = p._localId || p.ID;
+
+                tb.innerHTML += `<tr class="hover:bg-gray-50"><td class="px-6 py-4">${String(p.Tanggal).substring(0,10)} ${syncBadge}</td><td class="px-6 py-4 font-bold">${formatRp(p.Nominal)}</td><td class="px-6 py-4"><span class="px-2.5 py-1 rounded-md border text-xs font-semibold ${bCol}">${p.Metode}</span></td><td class="px-6 py-4">${p['Nama Pelanggan'] || '-'}</td><td class="px-6 py-4 text-xs font-medium text-textSec">${p.Status}</td><td class="px-6 py-4 text-center"><button onclick="deletePenjualan('${localId}')" class="p-1.5 text-danger hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`;
                 
-                tb.innerHTML += `<tr class="hover:bg-gray-50"><td class="px-6 py-4">${String(p.Tanggal).substring(0,10)}</td><td class="px-6 py-4 font-bold">${formatRp(p.Nominal)}</td><td class="px-6 py-4"><span class="px-2.5 py-1 rounded-md border text-xs font-semibold ${bCol}">${p.Metode}</span></td><td class="px-6 py-4">${p['Nama Pelanggan']}</td><td class="px-6 py-4 text-xs font-medium text-textSec">${p.Status}</td><td class="px-6 py-4 text-center"><button onclick="deletePenjualan('${p.ID}')" class="p-1.5 text-danger hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`;
-                
-                cd.innerHTML += `<div class="p-4 flex justify-between items-center"><div class="space-y-1"><div class="font-bold text-base text-textMain">${formatRp(p.Nominal)}</div><div class="text-xs text-textSec">${String(p.Tanggal).substring(0,10)} ${p['Nama Pelanggan'] !== '-' ? '• ' + p['Nama Pelanggan'] : ''}</div></div><div class="flex items-center space-x-2"><span class="px-2.5 py-1 rounded-md border text-[10px] font-bold ${bCol}">${p.Metode}</span><button onclick="deletePenjualan('${p.ID}')" class="p-1.5 text-danger hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`;
+                cd.innerHTML += `<div class="p-4 flex justify-between items-center"><div class="space-y-1"><div class="font-bold text-base text-textMain">${formatRp(p.Nominal)} ${syncBadge}</div><div class="text-xs text-textSec">${String(p.Tanggal).substring(0,10)} ${p['Nama Pelanggan'] && p['Nama Pelanggan'] !== '-' ? '• ' + p['Nama Pelanggan'] : ''}</div></div><div class="flex items-center space-x-2"><span class="px-2.5 py-1 rounded-md border text-[10px] font-bold ${bCol}">${p.Metode}</span><button onclick="deletePenjualan('${localId}')" class="p-1.5 text-danger hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`;
             });
             lucide.createIcons();
         }
@@ -1049,64 +1272,102 @@
             btn.innerText = "Menyimpan...";
             btn.disabled = true;
 
-            const payload = {
-                id: document.getElementById('pjId').value,
-                tanggal: document.getElementById('pjTanggal').value,
-                metode: document.getElementById('pjMetode').value,
-                namaPelanggan: document.getElementById('pjPelanggan').value,
-                nominal: document.getElementById('pjNominal').value
+            const localId = generateLocalId('PJ');
+            const nominal = parseFloat(document.getElementById('pjNominal').value);
+            const metode = document.getElementById('pjMetode').value;
+            const pelanggan = document.getElementById('pjPelanggan').value || '-';
+            const tanggal = document.getElementById('pjTanggal').value;
+            const status = metode === 'Camidu' ? 'Belum Lunas' : 'Lunas';
+
+            const newRecord = {
+                _localId: localId,
+                ID: localId,
+                Tanggal: tanggal,
+                Metode: metode,
+                'Nama Pelanggan': pelanggan,
+                Nominal: nominal,
+                Status: status,
+                _synced: false
             };
 
-            const res = await apiRequest('simpanPenjualan', payload);
+            // Simpan ke localStore Penjualan
+            const currentPj = getLocalStore('penjualan');
+            currentPj.unshift(newRecord);
+            setLocalStore('penjualan', currentPj);
+
+            // Jika Camidu -> buat record Piutang lokal
+            if (metode === 'Camidu') {
+                const ptLocalId = generateLocalId('PT');
+                const newPiutang = {
+                    _localId: ptLocalId,
+                    ID: ptLocalId,
+                    IDPenjualan: localId,
+                    Tanggal: tanggal,
+                    'Nama Pelanggan': pelanggan,
+                    'Total Hutang': nominal,
+                    'Total Dibayar': 0,
+                    Sisa: nominal,
+                    Status: 'Belum Lunas',
+                    _synced: false
+                };
+                const currentPt = getLocalStore('piutang');
+                currentPt.unshift(newPiutang);
+                setLocalStore('piutang', currentPt);
+            }
+
             btn.innerText = "Simpan Penjualan";
             btn.disabled = false;
 
-            if(res) {
-                showToast("Penjualan berhasil disimpan!");
-                document.getElementById('formPenjualan').reset();
-                updateLiveRp('pjNominal', 'pjNominalFmt');
-                toggleCamidu('Cash');
-                closeModal('modalPenjualan');
-                loadPenjualan();
-            }
+            showToast("Penjualan tersimpan!");
+            document.getElementById('formPenjualan').reset();
+            updateLiveRp('pjNominal', 'pjNominalFmt');
+            toggleCamidu('Cash');
+            closeModal('modalPenjualan');
+            loadPenjualan();
+
+            // Coba sinkron background jika terhubung
+            if (getApiUrl()) triggerSyncData();
         }
 
-        function deletePenjualan(id) {
+        function deletePenjualan(localId) {
             openConfirm("Hapus Penjualan?", "Apakah Anda yakin ingin menghapus catatan penjualan ini?", async () => {
-                const res = await apiRequest('hapusPenjualan', { id });
-                if(res) {
-                    showToast("Penjualan berhasil dihapus");
-                    loadPenjualan();
-                }
+                let current = getLocalStore('penjualan');
+                current = current.filter(item => item._localId !== localId && item.ID !== localId);
+                setLocalStore('penjualan', current);
+                showToast("Penjualan berhasil dihapus");
+                loadPenjualan();
             });
         }
 
         async function loadPiutang() {
-            const data = await apiRequest('getPiutang');
+            const data = getLocalStore('piutang');
+            data.sort((a, b) => new Date(b.Tanggal) - new Date(a.Tanggal));
+
             const tb = document.getElementById('tablePiutang');
             const cd = document.getElementById('cardPiutang');
             tb.innerHTML = ''; cd.innerHTML = '';
 
             let totalSisa = 0, countPelanggan = 0;
-            const activePiutang = (data || []).filter(p => parseFloat(p.Sisa) > 0);
+            const activePiutang = data.filter(p => parseFloat(p.Sisa) > 0);
 
             activePiutang.forEach(p => {
                 totalSisa += parseFloat(p.Sisa);
                 countPelanggan++;
 
                 const sCol = p.Status === 'Belum Lunas' ? 'bg-red-50 text-danger' : 'bg-orange-50 text-warning';
+                const localId = p._localId || p.ID;
 
-                tb.innerHTML += `<tr class="hover:bg-gray-50"><td class="px-6 py-4 font-bold text-textMain">${p['Nama Pelanggan']}</td><td class="px-6 py-4 text-textSec">${String(p.Tanggal).substring(0,10)}</td><td class="px-6 py-4">${formatRp(p['Total Hutang'])}</td><td class="px-6 py-4 text-success">${formatRp(p['Total Dibayar'])}</td><td class="px-6 py-4 font-bold text-danger">${formatRp(p.Sisa)}</td><td class="px-6 py-4"><span class="px-2.5 py-1 rounded-md text-xs font-semibold ${sCol}">${p.Status}</span></td><td class="px-6 py-4 text-center"><button onclick="openBayarModal('${p.ID}', '${p['Nama Pelanggan']}', ${p['Total Hutang']}, ${p.Sisa})" class="bg-success hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition">Bayar</button></td></tr>`;
+                tb.innerHTML += `<tr class="hover:bg-gray-50"><td class="px-6 py-4 font-bold text-textMain">${p['Nama Pelanggan']}</td><td class="px-6 py-4 text-textSec">${String(p.Tanggal).substring(0,10)}</td><td class="px-6 py-4">${formatRp(p['Total Hutang'])}</td><td class="px-6 py-4 text-success">${formatRp(p['Total Dibayar'])}</td><td class="px-6 py-4 font-bold text-danger">${formatRp(p.Sisa)}</td><td class="px-6 py-4"><span class="px-2.5 py-1 rounded-md text-xs font-semibold ${sCol}">${p.Status}</span></td><td class="px-6 py-4 text-center"><button onclick="openBayarModal('${localId}', '${p['Nama Pelanggan']}', ${p['Total Hutang']}, ${p.Sisa})" class="bg-success hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition">Bayar</button></td></tr>`;
 
-                cd.innerHTML += `<div class="p-4 bg-white rounded-xl border border-gray-100 mb-2"><div class="flex justify-between items-start mb-2"><div><div class="font-bold text-textMain text-sm">${p['Nama Pelanggan']}</div><div class="text-xs text-textSec">Tgl: ${String(p.Tanggal).substring(0,10)}</div></div><div class="text-right"><div class="font-bold text-danger text-sm">${formatRp(p.Sisa)}</div><div class="text-[10px] text-textSec">Hutang: ${formatRp(p['Total Hutang'])}</div></div></div><button onclick="openBayarModal('${p.ID}', '${p['Nama Pelanggan']}', ${p['Total Hutang']}, ${p.Sisa})" class="w-full bg-green-50 text-success border border-green-200 hover:bg-green-100 py-2 rounded-xl text-xs font-bold transition">Bayar Piutang</button></div>`;
+                cd.innerHTML += `<div class="p-4 bg-white rounded-xl border border-gray-100 mb-2"><div class="flex justify-between items-start mb-2"><div><div class="font-bold text-textMain text-sm">${p['Nama Pelanggan']}</div><div class="text-xs text-textSec">Tgl: ${String(p.Tanggal).substring(0,10)}</div></div><div class="text-right"><div class="font-bold text-danger text-sm">${formatRp(p.Sisa)}</div><div class="text-[10px] text-textSec">Hutang: ${formatRp(p['Total Hutang'])}</div></div></div><button onclick="openBayarModal('${localId}', '${p['Nama Pelanggan']}', ${p['Total Hutang']}, ${p.Sisa})" class="w-full bg-green-50 text-success border border-green-200 hover:bg-green-100 py-2 rounded-xl text-xs font-bold transition">Bayar Piutang</button></div>`;
             });
 
             document.getElementById('statTotalPiutang').innerText = formatRp(totalSisa);
             document.getElementById('statCountPiutang').innerText = `${countPelanggan} Orang`;
 
-            const history = await apiRequest('getRiwayatPembayaranPiutang');
+            const history = getLocalStore('pembayaranPiutang');
             let totalBayar = 0;
-            if(history) history.forEach(h => totalBayar += parseFloat(h.Nominal));
+            history.forEach(h => totalBayar += parseFloat(h.Nominal || 0));
             document.getElementById('statTotalBayarPiutang').innerText = formatRp(totalBayar);
 
             if(!activePiutang.length) {
@@ -1140,26 +1401,48 @@
             btn.innerText = "Memproses...";
             btn.disabled = true;
 
-            const payload = {
-                idPiutang: document.getElementById('bpId').value,
-                tanggal: document.getElementById('bpTanggal').value,
-                metode: document.getElementById('bpMetode').value,
-                nominal: nom
-            };
+            const targetId = document.getElementById('bpId').value;
+            const currentPtList = getLocalStore('piutang');
+            const ptRecord = currentPtList.find(p => (p._localId === targetId || p.ID === targetId));
 
-            const res = await apiRequest('simpanPembayaranPiutang', payload);
+            if (ptRecord) {
+                const sisaBaru = parseFloat(ptRecord.Sisa) - nom;
+                const dibayarBaru = parseFloat(ptRecord['Total Dibayar'] || 0) + nom;
+                ptRecord.Sisa = sisaBaru;
+                ptRecord['Total Dibayar'] = dibayarBaru;
+                ptRecord.Status = sisaBaru <= 0 ? 'Lunas' : 'Sebagian';
+                setLocalStore('piutang', currentPtList);
+
+                // Tambahkan riwayat pembayaran
+                const byLocalId = generateLocalId('BY');
+                const byRecord = {
+                    _localId: byLocalId,
+                    idPiutang: ptRecord.ID || targetId,
+                    tanggal: document.getElementById('bpTanggal').value,
+                    namaPelanggan: ptRecord['Nama Pelanggan'],
+                    nominal: nom,
+                    metode: document.getElementById('bpMetode').value,
+                    _synced: false
+                };
+                const currentBy = getLocalStore('pembayaranPiutang');
+                currentBy.unshift(byRecord);
+                setLocalStore('pembayaranPiutang', currentBy);
+            }
+
             btn.innerText = "Proses Pembayaran";
             btn.disabled = false;
 
-            if(res) {
-                showToast("Pembayaran piutang berhasil diproses!");
-                closeModal('modalBayarPiutang');
-                loadPiutang();
-            }
+            showToast("Pembayaran piutang tersimpan!");
+            closeModal('modalBayarPiutang');
+            loadPiutang();
+
+            if (getApiUrl()) triggerSyncData();
         }
 
         async function loadPengeluaran() {
-            const data = await apiRequest('getPengeluaran');
+            const data = getLocalStore('pengeluaran');
+            data.sort((a, b) => new Date(b.Tanggal) - new Date(a.Tanggal));
+
             const tb = document.getElementById('tablePengeluaran');
             const cd = document.getElementById('cardPengeluaran');
             tb.innerHTML = ''; cd.innerHTML = '';
@@ -1171,9 +1454,10 @@
             }
 
             data.forEach(pg => {
-                tb.innerHTML += `<tr class="hover:bg-gray-50"><td class="px-6 py-4">${String(pg.Tanggal).substring(0,10)}</td><td class="px-6 py-4"><span class="px-2.5 py-1 bg-gray-100 rounded-md text-xs font-semibold text-textMain">${pg.Kategori}</span></td><td class="px-6 py-4">${pg.Keterangan}</td><td class="px-6 py-4 font-bold text-danger">${formatRp(pg.Nominal)}</td><td class="px-6 py-4 text-center"><button onclick="deletePengeluaran('${pg.ID}')" class="p-1.5 text-danger hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`;
+                const localId = pg._localId || pg.ID;
+                tb.innerHTML += `<tr class="hover:bg-gray-50"><td class="px-6 py-4">${String(pg.Tanggal).substring(0,10)}</td><td class="px-6 py-4"><span class="px-2.5 py-1 bg-gray-100 rounded-md text-xs font-semibold text-textMain">${pg.Kategori}</span></td><td class="px-6 py-4">${pg.Keterangan}</td><td class="px-6 py-4 font-bold text-danger">${formatRp(pg.Nominal)}</td><td class="px-6 py-4 text-center"><button onclick="deletePengeluaran('${localId}')" class="p-1.5 text-danger hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`;
 
-                cd.innerHTML += `<div class="p-4 flex justify-between items-center"><div class="space-y-1"><div class="font-bold text-sm text-textMain">${pg.Kategori}</div><div class="text-xs text-textSec">${String(pg.Tanggal).substring(0,10)} • ${pg.Keterangan}</div></div><div class="flex items-center space-x-2"><div class="font-bold text-danger text-sm">${formatRp(pg.Nominal)}</div><button onclick="deletePengeluaran('${pg.ID}')" class="p-1 text-danger hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`;
+                cd.innerHTML += `<div class="p-4 flex justify-between items-center"><div class="space-y-1"><div class="font-bold text-sm text-textMain">${pg.Kategori}</div><div class="text-xs text-textSec">${String(pg.Tanggal).substring(0,10)} • ${pg.Keterangan}</div></div><div class="flex items-center space-x-2"><div class="font-bold text-danger text-sm">${formatRp(pg.Nominal)}</div><button onclick="deletePengeluaran('${localId}')" class="p-1 text-danger hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`;
             });
             lucide.createIcons();
         }
@@ -1184,34 +1468,40 @@
             btn.innerText = "Menyimpan...";
             btn.disabled = true;
 
+            const localId = generateLocalId('PG');
             const payload = {
-                id: document.getElementById('pgId').value,
-                tanggal: document.getElementById('pgTanggal').value,
-                kategori: document.getElementById('pgKategori').value,
-                keterangan: document.getElementById('pgKeterangan').value,
-                nominal: document.getElementById('pgNominal').value
+                _localId: localId,
+                ID: localId,
+                Tanggal: document.getElementById('pgTanggal').value,
+                Kategori: document.getElementById('pgKategori').value,
+                Keterangan: document.getElementById('pgKeterangan').value,
+                Nominal: parseFloat(document.getElementById('pgNominal').value),
+                _synced: false
             };
 
-            const res = await apiRequest('simpanPengeluaran', payload);
+            const current = getLocalStore('pengeluaran');
+            current.unshift(payload);
+            setLocalStore('pengeluaran', current);
+
             btn.innerText = "Simpan Pengeluaran";
             btn.disabled = false;
 
-            if(res) {
-                showToast("Pengeluaran berhasil dicatat!");
-                document.getElementById('formPengeluaran').reset();
-                updateLiveRp('pgNominal', 'pgNominalFmt');
-                closeModal('modalPengeluaran');
-                loadPengeluaran();
-            }
+            showToast("Pengeluaran dicatat!");
+            document.getElementById('formPengeluaran').reset();
+            updateLiveRp('pgNominal', 'pgNominalFmt');
+            closeModal('modalPengeluaran');
+            loadPengeluaran();
+
+            if (getApiUrl()) triggerSyncData();
         }
 
-        function deletePengeluaran(id) {
+        function deletePengeluaran(localId) {
             openConfirm("Hapus Pengeluaran?", "Yakin ingin menghapus catatan pengeluaran ini?", async () => {
-                const res = await apiRequest('hapusPengeluaran', { id });
-                if(res) {
-                    showToast("Pengeluaran berhasil dihapus");
-                    loadPengeluaran();
-                }
+                let current = getLocalStore('pengeluaran');
+                current = current.filter(item => item._localId !== localId && item.ID !== localId);
+                setLocalStore('pengeluaran', current);
+                showToast("Pengeluaran berhasil dihapus");
+                loadPengeluaran();
             });
         }
 
@@ -1246,30 +1536,57 @@
         async function loadPemakaianBahan() {
             const bulan = document.getElementById('pemBulan').value;
             const tahun = document.getElementById('pemTahun').value;
+            const targetPeriod = `${tahun}-${("0" + bulan).slice(-2)}`;
 
-            const res = await apiRequest('getPemakaianBahan', { bulan, tahun });
+            const bbList = getLocalStore('bahanBaku');
+            const pbList = getLocalStore('pembelianBahan');
+            const pkList = getLocalStore('pemakaianBahan');
+
             const tb = document.getElementById('tablePemakaianBahan');
             const cd = document.getElementById('cardPemakaianBahan');
             tb.innerHTML = ''; cd.innerHTML = '';
 
-            if(!res || !res.data || !res.data.length) {
+            if(!bbList.length) {
                 tb.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-textSec">Belum ada data bahan baku</td></tr>`;
                 cd.innerHTML = `<div class="p-6 text-center text-textSec text-sm">Belum ada data bahan baku</div>`;
                 document.getElementById('pemTotalBiaya').innerText = "Rp 0";
                 return;
             }
 
-            document.getElementById('pemTotalBiaya').innerText = formatRp(res.totalBiayaPemakaian);
+            let totalBiayaPemakaian = 0;
 
-            res.data.forEach(item => {
-                const terpakaiFmt = `${item.terpakai} ${item.satuan}`;
-                const biayaFmt = formatRp(item.biayaTerpakai);
+            bbList.forEach(bb => {
+                const nama = bb['Nama Bahan'];
+                const satuan = bb.Satuan || 'pcs';
+                const harga = parseFloat(bb['Harga Satuan']) || 0;
+                const stokAwal = parseFloat(bb['Stok Awal']) || 0;
+
+                let totalBeli = 0;
+                pbList.forEach(pb => {
+                    if (pb['Nama Bahan'] === nama && pb.Tanggal) {
+                        const pbDate = String(pb.Tanggal).substring(0, 7);
+                        if (pbDate === targetPeriod) {
+                            totalBeli += parseFloat(pb.Jumlah) || 0;
+                        }
+                    }
+                });
+
+                const existingLog = pkList.find(l => String(l.BulanTahun) === targetPeriod && l['Nama Bahan'] === nama);
+                let stokAkhir = parseFloat(bb['Stok Akhir']) || 0;
+                if (existingLog) stokAkhir = parseFloat(existingLog['Stok Akhir']) || 0;
+
+                const terpakai = Math.max(0, stokAwal + totalBeli - stokAkhir);
+                const biayaTerpakai = terpakai * harga;
+                totalBiayaPemakaian += biayaTerpakai;
+
+                const terpakaiFmt = `${terpakai} ${satuan}`;
+                const biayaFmt = formatRp(biayaTerpakai);
 
                 tb.innerHTML += `<tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 font-semibold text-textMain">${item.namaBahan}</td>
-                    <td class="px-6 py-4">${item.stokAwal} ${item.satuan}</td>
-                    <td class="px-6 py-4 text-primary font-medium">+${item.pembelian} ${item.satuan}</td>
-                    <td class="px-6 py-4 font-bold text-textMain">${item.stokAkhir} ${item.satuan}</td>
+                    <td class="px-6 py-4 font-semibold text-textMain">${nama}</td>
+                    <td class="px-6 py-4">${stokAwal} ${satuan}</td>
+                    <td class="px-6 py-4 text-primary font-medium">+${totalBeli} ${satuan}</td>
+                    <td class="px-6 py-4 font-bold text-textMain">${stokAkhir} ${satuan}</td>
                     <td class="px-6 py-4 font-bold text-warning">${terpakaiFmt}</td>
                     <td class="px-6 py-4 font-bold text-danger">${biayaFmt}</td>
                 </tr>`;
@@ -1277,8 +1594,8 @@
                 cd.innerHTML += `<div class="p-4 bg-white rounded-xl border border-gray-100 mb-2">
                     <div class="flex justify-between items-start mb-2">
                         <div>
-                            <div class="font-bold text-textMain text-sm">${item.namaBahan}</div>
-                            <div class="text-xs text-textSec">Stok Awal: ${item.stokAwal} | Beli: +${item.pembelian} | Stok Akhir: ${item.stokAkhir}</div>
+                            <div class="font-bold text-textMain text-sm">${nama}</div>
+                            <div class="text-xs text-textSec">Stok Awal: ${stokAwal} | Beli: +${totalBeli} | Stok Akhir: ${stokAkhir}</div>
                         </div>
                         <div class="text-right">
                             <div class="font-bold text-danger text-sm">${biayaFmt}</div>
@@ -1287,26 +1604,62 @@
                     </div>
                 </div>`;
             });
+
+            document.getElementById('pemTotalBiaya').innerText = formatRp(totalBiayaPemakaian);
         }
 
         let currentPemakaianData = [];
         async function openCatatPemakaianModal() {
             const bulan = document.getElementById('pemBulan').value;
             const tahun = document.getElementById('pemTahun').value;
+            const targetPeriod = `${tahun}-${("0" + bulan).slice(-2)}`;
             const container = document.getElementById('containerCatatPemakaianItems');
-            container.innerHTML = `<div class="text-center py-6 text-xs text-textSec">Memuat bahan baku...</div>`;
+
             openModal('modalCatatPemakaian');
 
-            const res = await apiRequest('getPemakaianBahan', { bulan, tahun });
-            if(!res || !res.data || !res.data.length) {
+            const bbList = getLocalStore('bahanBaku');
+            const pbList = getLocalStore('pembelianBahan');
+            const pkList = getLocalStore('pemakaianBahan');
+
+            if(!bbList.length) {
                 container.innerHTML = `<div class="text-center py-6 text-xs text-textSec">Tidak ada master bahan baku. Silakan tambah master bahan baku dulu.</div>`;
                 return;
             }
 
-            currentPemakaianData = res.data;
-            container.innerHTML = '';
+            currentPemakaianData = bbList.map(bb => {
+                const nama = bb['Nama Bahan'];
+                const satuan = bb.Satuan || 'pcs';
+                const harga = parseFloat(bb['Harga Satuan']) || 0;
+                const stokAwal = parseFloat(bb['Stok Awal']) || 0;
 
-            res.data.forEach((item, idx) => {
+                let totalBeli = 0;
+                pbList.forEach(pb => {
+                    if (pb['Nama Bahan'] === nama && pb.Tanggal && String(pb.Tanggal).substring(0, 7) === targetPeriod) {
+                        totalBeli += parseFloat(pb.Jumlah) || 0;
+                    }
+                });
+
+                const existingLog = pkList.find(l => String(l.BulanTahun) === targetPeriod && l['Nama Bahan'] === nama);
+                let stokAkhir = parseFloat(bb['Stok Akhir']) || 0;
+                if (existingLog) stokAkhir = parseFloat(existingLog['Stok Akhir']) || 0;
+
+                const terpakai = Math.max(0, stokAwal + totalBeli - stokAkhir);
+                const biayaTerpakai = terpakai * harga;
+
+                return {
+                    namaBahan: nama,
+                    satuan: satuan,
+                    hargaSatuan: harga,
+                    stokAwal: stokAwal,
+                    pembelian: totalBeli,
+                    stokAkhir: stokAkhir,
+                    terpakai: terpakai,
+                    biayaTerpakai: biayaTerpakai
+                };
+            });
+
+            container.innerHTML = '';
+            currentPemakaianData.forEach((item, idx) => {
                 container.innerHTML += `
                     <div class="p-3 bg-gray-50 rounded-2xl border border-gray-200 text-xs space-y-2">
                         <div class="flex justify-between items-center">
@@ -1348,33 +1701,57 @@
 
             const bulan = document.getElementById('pemBulan').value;
             const tahun = document.getElementById('pemTahun').value;
+            const targetPeriod = `${tahun}-${("0" + bulan).slice(-2)}`;
 
-            const itemsPayload = currentPemakaianData.map((item, idx) => {
-                const inputVal = document.getElementById(`pemInputStok_${idx}`).value;
-                return {
-                    namaBahan: item.namaBahan,
-                    stokAkhir: parseFloat(inputVal) || 0
-                };
+            const bbList = getLocalStore('bahanBaku');
+            const pkList = getLocalStore('pemakaianBahan');
+
+            currentPemakaianData.forEach((item, idx) => {
+                const stokInput = parseFloat(document.getElementById(`pemInputStok_${idx}`).value) || 0;
+                
+                // Update stok akhir master lokal
+                const bb = bbList.find(b => b['Nama Bahan'] === item.namaBahan);
+                if (bb) bb['Stok Akhir'] = stokInput;
+
+                // Log pemakaian lokal
+                let pk = pkList.find(l => l.BulanTahun === targetPeriod && l['Nama Bahan'] === item.namaBahan);
+                const terpakai = Math.max(0, item.stokAwal + item.pembelian - stokInput);
+                const biaya = terpakai * item.hargaSatuan;
+
+                if (pk) {
+                    pk['Stok Akhir'] = stokInput;
+                    pk.Terpakai = terpakai;
+                    pk['Biaya Terpakai'] = biaya;
+                } else {
+                    pkList.push({
+                        _localId: generateLocalId('PK'),
+                        BulanTahun: targetPeriod,
+                        'Nama Bahan': item.namaBahan,
+                        'Stok Awal': item.stokAwal,
+                        Pembelian: item.pembelian,
+                        'Stok Akhir': stokInput,
+                        Terpakai: terpakai,
+                        'Biaya Terpakai': biaya,
+                        _synced: false
+                    });
+                }
             });
 
-            const res = await apiRequest('simpanPemakaianBahan', {
-                bulan: bulan,
-                tahun: tahun,
-                items: itemsPayload
-            });
+            setLocalStore('bahanBaku', bbList);
+            setLocalStore('pemakaianBahan', pkList);
 
             btn.innerText = "Simpan Catatan Pemakaian";
             btn.disabled = false;
 
-            if(res) {
-                showToast("Catatan stok akhir dan pemakaian bahan berhasil disimpan!");
-                closeModal('modalCatatPemakaian');
-                loadPemakaianBahan();
-            }
+            showToast("Stok akhir bulan berhasil dicatat!");
+            closeModal('modalCatatPemakaian');
+            loadPemakaianBahan();
+
+            if (getApiUrl()) triggerSyncData();
         }
 
         async function loadBahanMaster() {
-            const data = await apiRequest('getBahanBaku');
+            const data = getLocalStore('bahanBaku');
             const tb = document.getElementById('tableBahanMaster');
             const cd = document.getElementById('cardBahanMaster');
             tb.innerHTML = ''; cd.innerHTML = '';
@@ -1386,9 +1763,10 @@
             }
 
             data.forEach(bb => {
-                tb.innerHTML += `<tr class="hover:bg-gray-50"><td class="px-6 py-4 font-semibold text-textMain">${bb['Nama Bahan']}</td><td class="px-6 py-4">${bb.Satuan}</td><td class="px-6 py-4">${formatRp(bb['Harga Satuan'])}</td><td class="px-6 py-4">${bb['Stok Awal']}</td><td class="px-6 py-4 font-bold text-primary">${bb['Stok Akhir']}</td><td class="px-6 py-4 text-center"><button onclick="deleteBahanBaku('${bb.ID}')" class="p-1.5 text-danger hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`;
+                const localId = bb._localId || bb.ID;
+                tb.innerHTML += `<tr class="hover:bg-gray-50"><td class="px-6 py-4 font-semibold text-textMain">${bb['Nama Bahan']}</td><td class="px-6 py-4">${bb.Satuan}</td><td class="px-6 py-4">${formatRp(bb['Harga Satuan'])}</td><td class="px-6 py-4">${bb['Stok Awal']}</td><td class="px-6 py-4 font-bold text-primary">${bb['Stok Akhir']}</td><td class="px-6 py-4 text-center"><button onclick="deleteBahanBaku('${localId}')" class="p-1.5 text-danger hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`;
 
-                cd.innerHTML += `<div class="p-4 flex justify-between items-center"><div class="space-y-1"><div class="font-bold text-sm text-textMain">${bb['Nama Bahan']}</div><div class="text-xs text-textSec">Stok: ${bb['Stok Akhir']} ${bb.Satuan} • ${formatRp(bb['Harga Satuan'])}/${bb.Satuan}</div></div><button onclick="deleteBahanBaku('${bb.ID}')" class="p-1 text-danger hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`;
+                cd.innerHTML += `<div class="p-4 flex justify-between items-center"><div class="space-y-1"><div class="font-bold text-sm text-textMain">${bb['Nama Bahan']}</div><div class="text-xs text-textSec">Stok: ${bb['Stok Akhir']} ${bb.Satuan} • ${formatRp(bb['Harga Satuan'])}/${bb.Satuan}</div></div><button onclick="deleteBahanBaku('${localId}')" class="p-1 text-danger hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`;
             });
             lucide.createIcons();
         }
@@ -1399,35 +1777,44 @@
             btn.innerText = "Menyimpan...";
             btn.disabled = true;
 
+            const localId = generateLocalId('BB');
+            const stokAwal = parseFloat(document.getElementById('bbStokAwal').value) || 0;
+            const stokAkhir = parseFloat(document.getElementById('bbStokAkhir').value) || stokAwal;
+
             const payload = {
-                id: document.getElementById('bbId').value,
-                namaBahan: document.getElementById('bbNama').value,
-                satuan: document.getElementById('bbSatuan').value,
-                hargaSatuan: document.getElementById('bbHarga').value,
-                stokAwal: document.getElementById('bbStokAwal').value,
-                stokAkhir: document.getElementById('bbStokAkhir').value
+                _localId: localId,
+                ID: localId,
+                'Nama Bahan': document.getElementById('bbNama').value,
+                Satuan: document.getElementById('bbSatuan').value,
+                'Harga Satuan': parseFloat(document.getElementById('bbHarga').value) || 0,
+                'Stok Awal': stokAwal,
+                'Stok Akhir': stokAkhir,
+                _synced: false
             };
 
-            const res = await apiRequest('simpanBahanBaku', payload);
+            const current = getLocalStore('bahanBaku');
+            current.unshift(payload);
+            setLocalStore('bahanBaku', current);
+
             btn.innerText = "Simpan Bahan Baku";
             btn.disabled = false;
 
-            if(res) {
-                showToast("Bahan baku berhasil disimpan!");
-                document.getElementById('formBahan').reset();
-                updateLiveRp('bbHarga', 'bbHargaFmt');
-                closeModal('modalBahan');
-                loadBahanMaster();
-            }
+            showToast("Bahan baku berhasil disimpan!");
+            document.getElementById('formBahan').reset();
+            updateLiveRp('bbHarga', 'bbHargaFmt');
+            closeModal('modalBahan');
+            loadBahanMaster();
+
+            if (getApiUrl()) triggerSyncData();
         }
 
-        function deleteBahanBaku(id) {
+        function deleteBahanBaku(localId) {
             openConfirm("Hapus Bahan Baku?", "Yakin ingin menghapus master bahan baku ini?", async () => {
-                const res = await apiRequest('hapusBahanBaku', { id });
-                if(res) {
-                    showToast("Bahan baku berhasil dihapus");
-                    loadBahanMaster();
-                }
+                let current = getLocalStore('bahanBaku');
+                current = current.filter(item => item._localId !== localId && item.ID !== localId);
+                setLocalStore('bahanBaku', current);
+                showToast("Bahan baku berhasil dihapus");
+                loadBahanMaster();
             });
         }
 
@@ -1440,7 +1827,9 @@
         }
 
         async function loadPembelianBahan() {
-            const data = await apiRequest('getPembelianBahan');
+            const data = getLocalStore('pembelianBahan');
+            data.sort((a, b) => new Date(b.Tanggal) - new Date(a.Tanggal));
+
             const tb = document.getElementById('tablePembelianBahan');
             const cd = document.getElementById('cardPembelianBahan');
             tb.innerHTML = ''; cd.innerHTML = '';
@@ -1452,7 +1841,7 @@
             }
 
             data.forEach(pb => {
-                tb.innerHTML += `<tr class="hover:bg-gray-50"><td class="px-6 py-4">${String(pb.Tanggal).substring(0,10)}</td><td class="px-6 py-4 font-semibold text-textMain">${pb['Nama Bahan']}</td><td class="px-6 py-4">${pb.Jumlah}</td><td class="px-6 py-4">${formatRp(pb['Harga Satuan'])}</td><td class="px-6 py-4 font-bold text-warning">${formatRp(pb.Total)}</td><td class="px-6 py-4 text-textSec">${pb.Supplier}</td></tr>`;
+                tb.innerHTML += `<tr class="hover:bg-gray-50"><td class="px-6 py-4">${String(pb.Tanggal).substring(0,10)}</td><td class="px-6 py-4 font-semibold text-textMain">${pb['Nama Bahan']}</td><td class="px-6 py-4">${pb.Jumlah}</td><td class="px-6 py-4">${formatRp(pb['Harga Satuan'])}</td><td class="px-6 py-4 font-bold text-warning">${formatRp(pb.Total)}</td><td class="px-6 py-4 text-textSec">${pb.Supplier || '-'}</td></tr>`;
 
                 cd.innerHTML += `<div class="p-4 flex justify-between items-center"><div class="space-y-1"><div class="font-bold text-sm text-textMain">${pb['Nama Bahan']}</div><div class="text-xs text-textSec">${String(pb.Tanggal).substring(0,10)} • ${pb.Jumlah} unit @ ${formatRp(pb['Harga Satuan'])}</div></div><div class="font-bold text-warning text-sm">${formatRp(pb.Total)}</div></div>`;
             });
@@ -1464,46 +1853,121 @@
             btn.innerText = "Menyimpan...";
             btn.disabled = true;
 
+            const localId = generateLocalId('PB');
+            const jumlah = parseFloat(document.getElementById('pbJumlah').value) || 0;
+            const harga = parseFloat(document.getElementById('pbHarga').value) || 0;
+            const total = jumlah * harga;
+            const namaBahan = document.getElementById('pbNama').value;
+
             const payload = {
-                tanggal: document.getElementById('pbTanggal').value,
-                namaBahan: document.getElementById('pbNama').value,
-                jumlah: document.getElementById('pbJumlah').value,
-                hargaSatuan: document.getElementById('pbHarga').value,
-                supplier: document.getElementById('pbSupplier').value
+                _localId: localId,
+                ID: localId,
+                Tanggal: document.getElementById('pbTanggal').value,
+                'Nama Bahan': namaBahan,
+                Jumlah: jumlah,
+                'Harga Satuan': harga,
+                Total: total,
+                Supplier: document.getElementById('pbSupplier').value || '-',
+                _synced: false
             };
 
-            const res = await apiRequest('simpanPembelianBahan', payload);
+            const current = getLocalStore('pembelianBahan');
+            current.unshift(payload);
+            setLocalStore('pembelianBahan', current);
+
+            // Tambah stok akhir master lokal
+            const bbList = getLocalStore('bahanBaku');
+            const bb = bbList.find(b => b['Nama Bahan'] === namaBahan);
+            if (bb) {
+                bb['Stok Akhir'] = (parseFloat(bb['Stok Akhir']) || 0) + jumlah;
+                setLocalStore('bahanBaku', bbList);
+            }
+
             btn.innerText = "Simpan Pembelian";
             btn.disabled = false;
 
-            if(res) {
-                showToast("Pembelian bahan berhasil dicatat!");
-                document.getElementById('formPembelianBahan').reset();
-                updateLiveRp('pbTotal', 'pbTotalFmt');
-                closeModal('modalPembelianBahan');
-                loadPembelianBahan();
-            }
+            showToast("Pembelian bahan dicatat!");
+            document.getElementById('formPembelianBahan').reset();
+            updateLiveRp('pbTotal', 'pbTotalFmt');
+            closeModal('modalPembelianBahan');
+            loadPembelianBahan();
+
+            if (getApiUrl()) triggerSyncData();
         }
 
         async function loadLaporan() {
-            const start = document.getElementById('lapStartDate').value;
-            const end = document.getElementById('lapEndDate').value;
+            const startInput = document.getElementById('lapStartDate').value;
+            const endInput = document.getElementById('lapEndDate').value;
 
-            const data = await apiRequest('getLaporan', { startDate: start, endDate: end });
-            if(!data) return;
+            const sDate = startInput ? new Date(startInput) : new Date(2020, 0, 1);
+            const eDate = endInput ? new Date(endInput) : new Date(2099, 11, 31);
+            eDate.setHours(23, 59, 59, 999);
 
-            document.getElementById('lapCash').innerText = formatRp(data.cash);
-            document.getElementById('lapQris').innerText = formatRp(data.qris);
-            document.getElementById('lapCamidu').innerText = formatRp(data.camidu);
-            document.getElementById('lapTotalOmzet').innerText = formatRp(data.totalOmzet);
+            const pjList = getLocalStore('penjualan');
+            const pgList = getLocalStore('pengeluaran');
+            const pbList = getLocalStore('pembelianBahan');
+            const bbList = getLocalStore('bahanBaku');
 
-            document.getElementById('lapPengeluaran').innerText = formatRp(data.totalPengeluaran);
-            document.getElementById('lapPembelianBahan').innerText = formatRp(data.totalPembelianBahan);
-            document.getElementById('lapBiayaBahanTerpakai').innerText = formatRp(data.totalBiayaBahanTerpakai);
+            let cash = 0, qris = 0, camidu = 0, totalOmzet = 0;
+            pjList.forEach(p => {
+                const d = new Date(p.Tanggal);
+                if (d >= sDate && d <= eDate) {
+                    const nom = parseFloat(p.Nominal) || 0;
+                    totalOmzet += nom;
+                    if (p.Metode === 'Cash') cash += nom;
+                    else if (p.Metode === 'QRIS') qris += nom;
+                    else if (p.Metode === 'Camidu') camidu += nom;
+                }
+            });
 
-            const totalBeban = data.totalPengeluaran + (data.totalBiayaBahanTerpakai > 0 ? data.totalBiayaBahanTerpakai : data.totalPembelianBahan);
+            let totalPengeluaran = 0;
+            pgList.forEach(pg => {
+                const d = new Date(pg.Tanggal);
+                if (d >= sDate && d <= eDate) {
+                    totalPengeluaran += parseFloat(pg.Nominal) || 0;
+                }
+            });
+
+            let totalPembelianBahan = 0;
+            pbList.forEach(pb => {
+                const d = new Date(pb.Tanggal);
+                if (d >= sDate && d <= eDate) {
+                    totalPembelianBahan += parseFloat(pb.Total) || 0;
+                }
+            });
+
+            let totalBiayaBahanTerpakai = 0;
+            bbList.forEach(bb => {
+                const stokAwal = parseFloat(bb['Stok Awal']) || 0;
+                const stokAkhir = parseFloat(bb['Stok Akhir']) || 0;
+                const hargaSatuan = parseFloat(bb['Harga Satuan']) || 0;
+
+                let pembBahan = 0;
+                pbList.forEach(pb => {
+                    const d = new Date(pb.Tanggal);
+                    if (pb['Nama Bahan'] === bb['Nama Bahan'] && d >= sDate && d <= eDate) {
+                        pembBahan += parseFloat(pb.Jumlah) || 0;
+                    }
+                });
+
+                const terpakai = Math.max(0, stokAwal + pembBahan - stokAkhir);
+                totalBiayaBahanTerpakai += (terpakai * hargaSatuan);
+            });
+
+            document.getElementById('lapCash').innerText = formatRp(cash);
+            document.getElementById('lapQris').innerText = formatRp(qris);
+            document.getElementById('lapCamidu').innerText = formatRp(camidu);
+            document.getElementById('lapTotalOmzet').innerText = formatRp(totalOmzet);
+
+            document.getElementById('lapPengeluaran').innerText = formatRp(totalPengeluaran);
+            document.getElementById('lapPembelianBahan').innerText = formatRp(totalPembelianBahan);
+            document.getElementById('lapBiayaBahanTerpakai').innerText = formatRp(totalBiayaBahanTerpakai);
+
+            const totalBeban = totalPengeluaran + (totalBiayaBahanTerpakai > 0 ? totalBiayaBahanTerpakai : totalPembelianBahan);
             document.getElementById('lapTotalBeban').innerText = formatRp(totalBeban);
-            document.getElementById('lapLabaBersih').innerText = formatRp(data.labaSederhana);
+
+            const labaSederhana = totalOmzet - totalBeban;
+            document.getElementById('lapLabaBersih').innerText = formatRp(labaSederhana);
         }
 
         window.onload = function() {
@@ -1529,13 +1993,12 @@
             if(document.getElementById('pemBulan')) document.getElementById('pemBulan').value = currentMonth;
             if(document.getElementById('pemTahun')) document.getElementById('pemTahun').value = currentYear;
 
-            if(!url) {
-                nav('pengaturan');
-                showToast("Backend belum dikonfigurasi. Silakan buka Pengaturan.", "warning");
-            } else {
-                nav('dashboard');
-                testConnection();
-            }
+            // Buka Dashboard langsung (Offline-first)
+            nav('dashboard');
+
+            // Coba tes koneksi jika URL terpasang
+            if(url) testConnection();
+            else setConnStatus(false);
         };
     </script>
 </body>
