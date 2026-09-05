@@ -55,7 +55,7 @@
         .fab { display: none; }
         @media (max-width: 768px) {
             .sidebar { display: none; }
-            .main-content { margin-left: 0 !important; padding-bottom: 90px; }
+            .main-content { margin-left: 0 !important; padding-bottom: 100px; }
             .bottom-nav { 
                 display: flex; position: fixed; bottom: 0; width: 100%; 
                 background: white; border-top: 1px solid #E5E7EB; z-index: 40; 
@@ -123,18 +123,18 @@
         </nav>
     </aside>
 
-    <!-- Main Content Container -->
-    <main class="main-content md:ml-64 pt-20 p-4 md:p-8 min-h-screen">
+    <!-- Main Content Container (pt-20 md:pt-24 guarantees no buttons are hidden under header) -->
+    <main class="main-content md:ml-64 pt-20 md:pt-24 pb-28 md:pb-12 px-4 md:px-8 min-h-screen">
         
         <!-- ==================== PAGE: DASHBOARD ==================== -->
         <section id="page-dashboard" class="page">
-            <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <div>
                     <h2 class="text-2xl font-bold text-textMain" id="dashWelcome">Selamat datang, Owner</h2>
                     <p class="text-textSec text-sm">Berikut ringkasan keuangan <span class="font-semibold text-primary" id="dashShopName">Warkop Jaya Pesisir</span></p>
                 </div>
                 <!-- Filter Tanggal Dashboard -->
-                <div class="flex items-center bg-white p-1.5 rounded-xl border border-gray-200 text-xs font-medium space-x-1 shadow-sm">
+                <div class="flex items-center bg-white p-1.5 rounded-xl border border-gray-200 text-xs font-medium space-x-1 shadow-sm self-start sm:self-auto">
                     <button onclick="filterDash('hari')" id="btnFilterHari" class="px-3 py-1.5 rounded-lg bg-primary text-white transition">Hari Ini</button>
                     <button onclick="filterDash('minggu')" id="btnFilterMinggu" class="px-3 py-1.5 rounded-lg text-textSec hover:bg-gray-100 transition">Minggu Ini</button>
                     <button onclick="filterDash('bulan')" id="btnFilterBulan" class="px-3 py-1.5 rounded-lg text-textSec hover:bg-gray-100 transition">Bulan Ini</button>
@@ -182,7 +182,6 @@
 
             <!-- Summary Lists -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Penjualan Terbaru -->
                 <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="font-bold text-base">Penjualan Terbaru</h3>
@@ -192,7 +191,6 @@
                         <div class="text-center py-6 text-textSec text-xs">Belum ada data</div>
                     </div>
                 </div>
-                <!-- Pengeluaran Terbaru -->
                 <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="font-bold text-base">Pengeluaran Terbaru</h3>
@@ -202,7 +200,6 @@
                         <div class="text-center py-6 text-textSec text-xs">Belum ada data</div>
                     </div>
                 </div>
-                <!-- Piutang Terbesar -->
                 <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="font-bold text-base">Piutang Terbesar</h3>
@@ -217,12 +214,12 @@
 
         <!-- ==================== PAGE: PENJUALAN ==================== -->
         <section id="page-penjualan" class="page">
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <div>
                     <h2 class="text-2xl font-bold text-textMain">Penjualan</h2>
                     <p class="text-xs text-textSec">Catat transaksi penjualan harian warkop</p>
                 </div>
-                <button onclick="openModal('modalPenjualan')" class="bg-primary hover:bg-blue-800 text-white px-4 py-2.5 rounded-xl font-medium text-sm shadow-md flex items-center transition"><i data-lucide="plus" class="w-4 h-4 mr-2"></i> Tambah Penjualan</button>
+                <button onclick="openModal('modalPenjualan')" class="bg-primary hover:bg-blue-800 text-white px-4 py-2.5 rounded-xl font-semibold text-sm shadow-md flex items-center justify-center transition self-start sm:self-auto"><i data-lucide="plus" class="w-4 h-4 mr-2"></i> Tambah Penjualan</button>
             </div>
             
             <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -251,7 +248,7 @@
 
         <!-- ==================== PAGE: PIUTANG / CAMIDU ==================== -->
         <section id="page-piutang" class="page">
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <div>
                     <h2 class="text-2xl font-bold text-textMain">Piutang / Camidu</h2>
                     <p class="text-xs text-textSec">Kelola data pinjaman dan pembayaran pelanggan</p>
@@ -260,15 +257,15 @@
 
             <!-- Header Stat Piutang -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div class="bg-white p-4 rounded-xl border shadow-sm">
+                <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
                     <span class="text-xs text-textSec font-medium block mb-1">Total Sisa Piutang</span>
                     <span class="text-xl font-bold text-danger" id="statTotalPiutang">Rp 0</span>
                 </div>
-                <div class="bg-white p-4 rounded-xl border shadow-sm">
+                <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
                     <span class="text-xs text-textSec font-medium block mb-1">Jumlah Pelanggan Berhutang</span>
                     <span class="text-xl font-bold text-textMain" id="statCountPiutang">0 Orang</span>
                 </div>
-                <div class="bg-white p-4 rounded-xl border shadow-sm">
+                <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
                     <span class="text-xs text-textSec font-medium block mb-1">Total Pembayaran Terkumpul</span>
                     <span class="text-xl font-bold text-success" id="statTotalBayarPiutang">Rp 0</span>
                 </div>
@@ -301,12 +298,12 @@
 
         <!-- ==================== PAGE: PENGELUARAN ==================== -->
         <section id="page-pengeluaran" class="page">
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <div>
                     <h2 class="text-2xl font-bold text-textMain">Pengeluaran Harian</h2>
                     <p class="text-xs text-textSec">Catat beban operasional, listrik, gaji, dan biaya rutin</p>
                 </div>
-                <button onclick="openModal('modalPengeluaran')" class="bg-primary hover:bg-blue-800 text-white px-4 py-2.5 rounded-xl font-medium text-sm shadow-md flex items-center transition"><i data-lucide="plus" class="w-4 h-4 mr-2"></i> Catat Pengeluaran</button>
+                <button onclick="openModal('modalPengeluaran')" class="bg-primary hover:bg-blue-800 text-white px-4 py-2.5 rounded-xl font-semibold text-sm shadow-md flex items-center justify-center transition self-start sm:self-auto"><i data-lucide="plus" class="w-4 h-4 mr-2"></i> Catat Pengeluaran</button>
             </div>
              <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div class="hidden md:block overflow-x-auto">
@@ -333,24 +330,24 @@
 
         <!-- ==================== PAGE: BAHAN BAKU ==================== -->
         <section id="page-bahan" class="page">
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <div>
                     <h2 class="text-2xl font-bold text-textMain">Bahan Baku</h2>
                     <p class="text-xs text-textSec">Kelola stok, pembelian, dan pemakaian bahan warkop</p>
                 </div>
-                <div class="flex space-x-2">
+                <div class="flex space-x-2 self-start sm:self-auto">
                     <button onclick="openModal('modalBahan')" class="bg-white border border-gray-200 hover:bg-gray-50 text-textMain px-3 py-2 rounded-xl text-xs font-semibold shadow-sm">Master Bahan</button>
                     <button onclick="openModal('modalPembelianBahan')" class="bg-primary hover:bg-blue-800 text-white px-3 py-2 rounded-xl text-xs font-semibold shadow-md">+ Pembelian Bahan</button>
                 </div>
             </div>
 
             <!-- Sub Tabs -->
-            <div class="flex border-b border-gray-200 mb-6 space-x-6 text-sm font-semibold">
+            <div class="flex border-b border-gray-200 mb-6 space-x-4 md:space-x-6 text-xs md:text-sm font-semibold">
                 <button onclick="switchBahanTab('master')" id="tabBahanMaster" class="pb-3 border-b-2 border-primary text-primary transition">Data Bahan</button>
                 <button onclick="switchBahanTab('pembelian')" id="tabBahanPembelian" class="pb-3 border-b-2 border-transparent text-textSec hover:text-textMain transition">Pembelian Bahan</button>
+                <button onclick="switchBahanTab('pemakaian')" id="tabBahanPemakaian" class="pb-3 border-b-2 border-transparent text-textSec hover:text-textMain transition flex items-center"><i data-lucide="calendar-check" class="w-4 h-4 mr-1"></i> Pemakaian Bulanan</button>
             </div>
 
-            <!-- Tab 1: Master Bahan -->
             <div id="subtabBahanMaster" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div class="hidden md:block overflow-x-auto">
                     <table class="w-full text-left text-sm whitespace-nowrap">
@@ -372,7 +369,6 @@
                 <div class="md:hidden divide-y divide-gray-100 p-2" id="cardBahanMaster"></div>
             </div>
 
-            <!-- Tab 2: Pembelian Bahan -->
             <div id="subtabBahanPembelian" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hidden">
                 <div class="hidden md:block overflow-x-auto">
                     <table class="w-full text-left text-sm whitespace-nowrap">
@@ -393,16 +389,67 @@
                 </div>
                 <div class="md:hidden divide-y divide-gray-100 p-2" id="cardPembelianBahan"></div>
             </div>
+
+            <div id="subtabBahanPemakaian" class="hidden space-y-6">
+                <!-- Filter Periode Pemakaian -->
+                <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                    <div class="flex items-center space-x-2 text-xs font-medium">
+                        <label class="text-textSec">Periode Bulan:</label>
+                        <select id="pemBulan" class="border border-gray-200 rounded-xl p-2 outline-none focus:border-primary bg-white">
+                            <option value="1">Januari</option><option value="2">Februari</option><option value="3">Maret</option>
+                            <option value="4">April</option><option value="5">Mei</option><option value="6">Juni</option>
+                            <option value="7">Juli</option><option value="8">Agustus</option><option value="9">September</option>
+                            <option value="10">Oktober</option><option value="11">November</option><option value="12">Desember</option>
+                        </select>
+                        <select id="pemTahun" class="border border-gray-200 rounded-xl p-2 outline-none focus:border-primary bg-white">
+                            <option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option>
+                        </select>
+                        <button onclick="loadPemakaianBahan()" class="bg-gray-100 hover:bg-gray-200 text-textMain px-3 py-2 rounded-xl transition">Tampilkan</button>
+                    </div>
+                    <button onclick="openCatatPemakaianModal()" class="bg-primary hover:bg-blue-800 text-white px-4 py-2.5 rounded-xl font-semibold text-xs shadow-md flex items-center justify-center transition"><i data-lucide="edit-3" class="w-4 h-4 mr-2"></i> + Catat / Update Stok Akhir Bulan</button>
+                </div>
+
+                <!-- Total Summary Banner -->
+                <div class="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex justify-between items-center">
+                    <div>
+                        <div class="text-xs text-textSec font-medium">Total Biaya Bahan Terpakai (Periode Ini)</div>
+                        <div class="text-xl font-bold text-primary" id="pemTotalBiaya">Rp 0</div>
+                    </div>
+                    <div class="p-3 bg-primary text-white rounded-xl"><i data-lucide="calculator" class="w-5 h-5"></i></div>
+                </div>
+
+                <!-- Table Pemakaian -->
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                    <div class="hidden md:block overflow-x-auto">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="bg-gray-50 text-textSec border-b">
+                                <tr>
+                                    <th class="px-6 py-4 font-semibold">Nama Bahan</th>
+                                    <th class="px-6 py-4 font-semibold">Stok Awal</th>
+                                    <th class="px-6 py-4 font-semibold">Pembelian</th>
+                                    <th class="px-6 py-4 font-semibold">Stok Akhir Fisik</th>
+                                    <th class="px-6 py-4 font-semibold">Jumlah Terpakai</th>
+                                    <th class="px-6 py-4 font-semibold">Biaya Terpakai (Rp)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablePemakaianBahan" class="divide-y divide-gray-100">
+                                <tr><td colspan="6" class="px-6 py-8 text-center text-textSec">Memuat data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="md:hidden divide-y divide-gray-100 p-2" id="cardPemakaianBahan"></div>
+                </div>
+            </div>
         </section>
 
         <!-- ==================== PAGE: LAPORAN ==================== -->
         <section id="page-laporan" class="page">
-            <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <div>
                     <h2 class="text-2xl font-bold text-textMain">Laporan Keuangan</h2>
                     <p class="text-xs text-textSec">Rekapitulasi pendapatan, beban, dan laba kotor sederhana</p>
                 </div>
-                <div class="flex items-center space-x-2 bg-white p-2 rounded-xl border border-gray-200 shadow-sm text-xs">
+                <div class="flex items-center space-x-2 bg-white p-2 rounded-xl border border-gray-200 shadow-sm text-xs self-start sm:self-auto">
                     <input type="date" id="lapStartDate" class="border rounded-lg p-1.5 outline-none">
                     <span class="text-textSec">s/d</span>
                     <input type="date" id="lapEndDate" class="border rounded-lg p-1.5 outline-none">
@@ -412,7 +459,6 @@
 
             <!-- Report Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <!-- Pendapatan -->
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                     <h3 class="font-bold text-lg text-primary mb-4 flex items-center"><i data-lucide="arrow-down-right" class="w-5 h-5 mr-2"></i> Pendapatan (Omzet)</h3>
                     <div class="space-y-3 text-sm">
@@ -424,7 +470,6 @@
                     </div>
                 </div>
 
-                <!-- Pengeluaran & Beban -->
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                     <h3 class="font-bold text-lg text-danger mb-4 flex items-center"><i data-lucide="arrow-up-right" class="w-5 h-5 mr-2"></i> Pengeluaran & Beban</h3>
                     <div class="space-y-3 text-sm">
@@ -437,7 +482,6 @@
                 </div>
             </div>
 
-            <!-- Laba Clean Card -->
             <div class="bg-gradient-to-r from-[#0D21A1] to-[#1E3A8A] text-white p-6 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-center gap-4">
                 <div>
                     <h3 class="text-white/80 font-medium mb-1 text-sm">Laba Bersih Sederhana</h3>
@@ -452,7 +496,6 @@
             <h2 class="text-2xl font-bold text-textMain mb-6">Pengaturan Sistem</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Identitas Warkop -->
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                     <h3 class="font-bold text-lg mb-4 flex items-center text-primary"><i data-lucide="store" class="w-5 h-5 mr-2"></i> Identitas Warkop</h3>
                     <div class="space-y-4 text-sm">
@@ -468,11 +511,10 @@
                     </div>
                 </div>
 
-                <!-- Konfigurasi Backend -->
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                     <h3 class="font-bold text-lg mb-4 flex items-center text-primary"><i data-lucide="database" class="w-5 h-5 mr-2"></i> Konfigurasi Backend</h3>
                     <p class="text-xs text-textSec mb-4 leading-relaxed">
-                        Masukkan URL Google Apps Script hasil deploy Web App Anda di sini. URL ini disimpan aman di browser (localStorage) dan tidak akan mengubah source code.
+                        Masukkan URL Google Apps Script hasil deploy Web App Anda di sini. URL disimpan aman di browser (localStorage).
                     </p>
                     <div class="space-y-4 text-sm">
                         <div>
@@ -495,7 +537,7 @@
     <nav class="bottom-nav">
         <button onclick="nav('dashboard')" id="mob-dashboard" class="flex flex-col items-center p-1 text-textSec"><i data-lucide="home" class="w-5 h-5 mb-1"></i><span class="text-[10px]">Dashboard</span></button>
         <button onclick="nav('penjualan')" id="mob-penjualan" class="flex flex-col items-center p-1 text-textSec"><i data-lucide="receipt" class="w-5 h-5 mb-1"></i><span class="text-[10px]">Jual</span></button>
-        <div class="w-10"></div> <!-- Placeholder for FAB -->
+        <div class="w-10"></div>
         <button onclick="nav('piutang')" id="mob-piutang" class="flex flex-col items-center p-1 text-textSec"><i data-lucide="users" class="w-5 h-5 mb-1"></i><span class="text-[10px]">Piutang</span></button>
         <button onclick="nav('laporan')" id="mob-laporan" class="flex flex-col items-center p-1 text-textSec"><i data-lucide="bar-chart-3" class="w-5 h-5 mb-1"></i><span class="text-[10px]">Laporan</span></button>
     </nav>
@@ -511,6 +553,19 @@
                 <button onclick="closeModal('modalMenuAction'); openModal('modalPenjualan')" class="p-4 border border-gray-100 bg-gray-50 rounded-2xl flex flex-col items-center font-bold text-primary hover:bg-blue-50 text-xs"><i data-lucide="receipt" class="w-7 h-7 mb-2"></i>Penjualan</button>
                 <button onclick="closeModal('modalMenuAction'); openModal('modalPengeluaran')" class="p-4 border border-gray-100 bg-gray-50 rounded-2xl flex flex-col items-center font-bold text-danger hover:bg-red-50 text-xs"><i data-lucide="wallet" class="w-7 h-7 mb-2"></i>Pengeluaran</button>
                 <button onclick="closeModal('modalMenuAction'); openModal('modalPembelianBahan')" class="p-4 border border-gray-100 bg-gray-50 rounded-2xl flex flex-col items-center font-bold text-warning hover:bg-orange-50 text-xs col-span-2"><i data-lucide="package" class="w-7 h-7 mb-2"></i>Pembelian Bahan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Hapus (Pengganti confirm native) -->
+    <div id="modalConfirmDelete" class="fixed inset-0 modal-overlay hidden z-[60] flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl text-center space-y-4">
+            <div class="w-12 h-12 bg-red-100 text-danger rounded-full flex items-center justify-center mx-auto"><i data-lucide="alert-triangle" class="w-6 h-6"></i></div>
+            <h3 class="font-bold text-lg text-textMain" id="confirmTitle">Hapus Data?</h3>
+            <p class="text-xs text-textSec" id="confirmMsg">Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.</p>
+            <div class="flex space-x-3 pt-2">
+                <button onclick="closeModal('modalConfirmDelete')" class="flex-1 bg-gray-100 text-textMain py-2.5 rounded-xl text-xs font-bold hover:bg-gray-200">Batal</button>
+                <button id="btnDoDelete" class="flex-1 bg-danger text-white py-2.5 rounded-xl text-xs font-bold hover:bg-red-600">Ya, Hapus</button>
             </div>
         </div>
     </div>
@@ -533,7 +588,11 @@
                     <label class="block text-xs font-semibold text-textSec mb-1">Nama Pelanggan <span class="text-danger">*</span></label>
                     <input type="text" id="pjPelanggan" class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary transition" placeholder="Nama peminjam...">
                 </div>
-                <div><label class="block text-xs font-semibold text-textSec mb-1">Nominal (Rp)</label><input type="number" id="pjNominal" required min="1" class="w-full border-2 border-gray-200 rounded-xl p-3 text-lg font-bold outline-none focus:border-primary transition" placeholder="0"></div>
+                <div>
+                    <label class="block text-xs font-semibold text-textSec mb-1">Nominal (Rp)</label>
+                    <input type="number" id="pjNominal" required min="1" oninput="updateLiveRp('pjNominal', 'pjNominalFmt')" class="w-full border-2 border-gray-200 rounded-xl p-3 text-lg font-bold outline-none focus:border-primary transition" placeholder="0">
+                    <span id="pjNominalFmt" class="text-xs font-bold text-primary mt-1 block">Rp 0</span>
+                </div>
                 <button type="submit" id="btnSubmitPj" class="w-full bg-primary hover:bg-blue-800 text-white py-3.5 rounded-xl font-bold shadow-lg transition mt-2">Simpan Penjualan</button>
             </form>
         </div>
@@ -557,7 +616,11 @@
                         <option value="QRIS">QRIS</option>
                     </select>
                 </div>
-                <div><label class="block text-xs font-semibold text-textSec mb-1">Nominal Pembayaran (Rp)</label><input type="number" id="bpNominal" required min="1" class="w-full border-2 border-gray-200 rounded-xl p-3 text-lg font-bold text-success outline-none focus:border-primary" placeholder="0"></div>
+                <div>
+                    <label class="block text-xs font-semibold text-textSec mb-1">Nominal Pembayaran (Rp)</label>
+                    <input type="number" id="bpNominal" required min="1" oninput="updateLiveRp('bpNominal', 'bpNominalFmt')" class="w-full border-2 border-gray-200 rounded-xl p-3 text-lg font-bold text-success outline-none focus:border-primary" placeholder="0">
+                    <span id="bpNominalFmt" class="text-xs font-bold text-success mt-1 block">Rp 0</span>
+                </div>
                 <button type="submit" id="btnSubmitBp" class="w-full bg-success hover:bg-green-700 text-white py-3.5 rounded-xl font-bold shadow-lg transition mt-2">Proses Pembayaran</button>
             </form>
         </div>
@@ -572,19 +635,19 @@
                 <div><label class="block text-xs font-semibold text-textSec mb-1">Tanggal</label><input type="date" id="pgTanggal" required class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary"></div>
                 <div><label class="block text-xs font-semibold text-textSec mb-1">Kategori</label>
                     <select id="pgKategori" class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary bg-white">
-                        <option value="Listrik">Listrik</option>
-                        <option value="Air">Air</option>
-                        <option value="Gas">Gas</option>
-                        <option value="Gaji">Gaji</option>
-                        <option value="Transportasi">Transportasi</option>
-                        <option value="Kebersihan">Kebersihan</option>
+                        <option value="Operasional">Operasional</option>
+                        <option value="Listrik/Air">Listrik / Air</option>
+                        <option value="Gaji/Insentif">Gaji / Insentif</option>
                         <option value="Perbaikan">Perbaikan</option>
-                        <option value="Perlengkapan">Perlengkapan</option>
                         <option value="Lainnya">Lainnya</option>
                     </select>
                 </div>
                 <div><label class="block text-xs font-semibold text-textSec mb-1">Keterangan</label><input type="text" id="pgKeterangan" required class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="Beli token listrik..."></div>
-                <div><label class="block text-xs font-semibold text-textSec mb-1">Nominal (Rp)</label><input type="number" id="pgNominal" required min="1" class="w-full border-2 border-gray-200 rounded-xl p-3 text-lg font-bold text-danger outline-none focus:border-primary" placeholder="0"></div>
+                <div>
+                    <label class="block text-xs font-semibold text-textSec mb-1">Nominal (Rp)</label>
+                    <input type="number" id="pgNominal" required min="1" oninput="updateLiveRp('pgNominal', 'pgNominalFmt')" class="w-full border-2 border-gray-200 rounded-xl p-3 text-lg font-bold text-danger outline-none focus:border-primary" placeholder="0">
+                    <span id="pgNominalFmt" class="text-xs font-bold text-danger mt-1 block">Rp 0</span>
+                </div>
                 <button type="submit" id="btnSubmitPg" class="w-full bg-danger hover:bg-red-600 text-white py-3.5 rounded-xl font-bold shadow-lg transition mt-2">Simpan Pengeluaran</button>
             </form>
         </div>
@@ -599,7 +662,11 @@
                 <div><label class="block text-xs font-semibold text-textSec mb-1">Nama Bahan</label><input type="text" id="bbNama" required class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="Biji Kopi Robusta..."></div>
                 <div class="grid grid-cols-2 gap-3">
                     <div><label class="block text-xs font-semibold text-textSec mb-1">Satuan</label><input type="text" id="bbSatuan" required class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="Kg, Pack, Liter"></div>
-                    <div><label class="block text-xs font-semibold text-textSec mb-1">Harga Satuan (Rp)</label><input type="number" id="bbHarga" required min="0" class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="0"></div>
+                    <div>
+                        <label class="block text-xs font-semibold text-textSec mb-1">Harga Satuan (Rp)</label>
+                        <input type="number" id="bbHarga" required min="0" oninput="updateLiveRp('bbHarga', 'bbHargaFmt')" class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="0">
+                        <span id="bbHargaFmt" class="text-[11px] font-bold text-primary mt-1 block">Rp 0</span>
+                    </div>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div><label class="block text-xs font-semibold text-textSec mb-1">Stok Awal</label><input type="number" id="bbStokAwal" required min="0" class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="0"></div>
@@ -619,11 +686,37 @@
                 <div><label class="block text-xs font-semibold text-textSec mb-1">Nama Bahan</label><input type="text" id="pbNama" required class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="Kopi, Sugar, Es Batu..."></div>
                 <div class="grid grid-cols-2 gap-3">
                     <div><label class="block text-xs font-semibold text-textSec mb-1">Jumlah</label><input type="number" id="pbJumlah" required min="1" oninput="calcPbTotal()" class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="0"></div>
-                    <div><label class="block text-xs font-semibold text-textSec mb-1">Harga Satuan (Rp)</label><input type="number" id="pbHarga" required min="0" oninput="calcPbTotal()" class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="0"></div>
+                    <div>
+                        <label class="block text-xs font-semibold text-textSec mb-1">Harga Satuan (Rp)</label>
+                        <input type="number" id="pbHarga" required min="0" oninput="calcPbTotal()" class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="0">
+                    </div>
                 </div>
-                <div><label class="block text-xs font-semibold text-textSec mb-1">Total Biaya (Rp)</label><input type="number" id="pbTotal" readonly class="w-full border-2 border-gray-100 bg-gray-50 rounded-xl p-3 text-lg font-bold text-warning outline-none" placeholder="0"></div>
+                <div>
+                    <label class="block text-xs font-semibold text-textSec mb-1">Total Biaya (Rp)</label>
+                    <input type="number" id="pbTotal" readonly class="w-full border-2 border-gray-100 bg-gray-50 rounded-xl p-3 text-lg font-bold text-warning outline-none" placeholder="0">
+                    <span id="pbTotalFmt" class="text-xs font-bold text-warning mt-1 block">Rp 0</span>
+                </div>
                 <div><label class="block text-xs font-semibold text-textSec mb-1">Supplier / Toko</label><input type="text" id="pbSupplier" class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="Toko Grosir Jaya..."></div>
                 <button type="submit" id="btnSubmitPb" class="w-full bg-warning hover:bg-yellow-600 text-white py-3.5 rounded-xl font-bold shadow-lg transition mt-2">Simpan Pembelian</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Form Pencatatan Stok Akhir Bulan -->
+    <div id="modalCatatPemakaian" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-lg p-6 shadow-2xl max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h3 class="font-bold text-xl">Catat Stok Akhir Bulan</h3>
+                    <p class="text-xs text-textSec">Masukkan sisa fisik stok di warkop pada akhir bulan</p>
+                </div>
+                <button onclick="closeModal('modalCatatPemakaian')"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="formCatatPemakaian" onsubmit="submitCatatPemakaian(event)" class="space-y-4 overflow-y-auto pr-1 flex-1">
+                <div id="containerCatatPemakaianItems" class="space-y-3">
+                    <div class="text-center py-6 text-xs text-textSec">Memuat bahan...</div>
+                </div>
+                <button type="submit" id="btnSubmitCatatPem" class="w-full bg-primary hover:bg-blue-800 text-white py-3.5 rounded-xl font-bold shadow-lg transition mt-4">Simpan Catatan Pemakaian</button>
             </form>
         </div>
     </div>
@@ -636,9 +729,23 @@
         let trendChartInstance = null;
         let metodeChartInstance = null;
 
-        // Utilities
+        // Utilities for thousand separator formatting
         const todayStr = new Date().toLocaleDateString('en-CA');
-        const formatRp = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num || 0);
+        
+        // Formatter angka pemisah ribuan Rupiah
+        const formatRp = (num) => {
+            const val = parseFloat(num) || 0;
+            return 'Rp ' + val.toLocaleString('id-ID');
+        };
+
+        // Real-time update live text pemisah ribuan di form
+        function updateLiveRp(inputId, targetFmtId) {
+            const inputVal = document.getElementById(inputId).value;
+            const targetEl = document.getElementById(targetFmtId);
+            if (targetEl) {
+                targetEl.innerText = formatRp(inputVal);
+            }
+        }
 
         // Toast Helper
         function showToast(msg, type = 'success') {
@@ -654,7 +761,19 @@
             }, 3000);
         }
 
-        // Backend URL Helper
+        // Custom Modal Confirm Handler
+        function openConfirm(title, msg, onConfirmFn) {
+            document.getElementById('confirmTitle').innerText = title;
+            document.getElementById('confirmMsg').innerText = msg;
+            const btn = document.getElementById('btnDoDelete');
+            btn.onclick = function() {
+                closeModal('modalConfirmDelete');
+                onConfirmFn();
+            };
+            openModal('modalConfirmDelete');
+        }
+
+        // Backend URL Helpers
         function getApiUrl() {
             return localStorage.getItem("warkop_api_url") || "";
         }
@@ -698,7 +817,7 @@
                 const callbackName = 'jsonp_cb_' + Math.round(100000 * Math.random());
                 window[callbackName] = function(response) {
                     delete window[callbackName];
-                    document.body.removeChild(script);
+                    if (script.parentNode) document.body.removeChild(script);
                     if (response && response.status === 'success') {
                         setConnStatus(true);
                         resolve(response.data !== undefined ? response.data : true);
@@ -735,7 +854,6 @@
             }
         }
 
-        // SPA Navigation
         function nav(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             const target = document.getElementById('page-' + pageId);
@@ -760,7 +878,9 @@
             const mBtn = document.getElementById('mob-' + pageId);
             if(mBtn) { mBtn.classList.remove('text-textSec'); mBtn.classList.add('text-primary'); }
 
-            // Check API configuration
+            // Scroll window to top on page switch
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
             if (!getApiUrl() && pageId !== 'pengaturan') {
                 showToast("Backend belum dikonfigurasi. Silakan buka Pengaturan.", "warning");
             }
@@ -778,9 +898,13 @@
             document.getElementById(id).classList.remove('hidden');
             if(id === 'modalPenjualan' && !document.getElementById('pjId').value) {
                 document.getElementById('pjTanggal').value = todayStr;
+                document.getElementById('pjNominal').value = '';
+                updateLiveRp('pjNominal', 'pjNominalFmt');
             }
             if(id === 'modalPengeluaran' && !document.getElementById('pgId').value) {
                 document.getElementById('pgTanggal').value = todayStr;
+                document.getElementById('pgNominal').value = '';
+                updateLiveRp('pgNominal', 'pgNominalFmt');
             }
             if(id === 'modalPembelianBahan') {
                 document.getElementById('pbTanggal').value = todayStr;
@@ -834,7 +958,7 @@
             document.getElementById('dashPiutang').innerText = formatRp(data.totalPiutang);
             document.getElementById('dashLaba').innerText = formatRp(data.labaSederhana);
 
-            // Render Recent Penjualan
+            // Recent Penjualan
             const elPj = document.getElementById('dashRecentPenjualan');
             elPj.innerHTML = '';
             if(data.recentPenjualan && data.recentPenjualan.length) {
@@ -843,7 +967,7 @@
                 });
             } else elPj.innerHTML = `<div class="text-center py-4 text-textSec text-xs">Belum ada data</div>`;
 
-            // Render Recent Pengeluaran
+            // Recent Pengeluaran
             const elPg = document.getElementById('dashRecentPengeluaran');
             elPg.innerHTML = '';
             if(data.recentPengeluaran && data.recentPengeluaran.length) {
@@ -852,7 +976,7 @@
                 });
             } else elPg.innerHTML = `<div class="text-center py-4 text-textSec text-xs">Belum ada data</div>`;
 
-            // Render Top Piutang
+            // Top Piutang
             const elPt = document.getElementById('dashTopPiutang');
             elPt.innerHTML = '';
             if(data.topPiutang && data.topPiutang.length) {
@@ -912,10 +1036,8 @@
             data.forEach(p => {
                 const bCol = p.Metode === 'Cash' ? 'bg-green-50 text-success border-green-200' : p.Metode === 'QRIS' ? 'bg-blue-50 text-primary border-blue-200' : 'bg-orange-50 text-warning border-orange-200';
                 
-                // Table Desktop
                 tb.innerHTML += `<tr class="hover:bg-gray-50"><td class="px-6 py-4">${String(p.Tanggal).substring(0,10)}</td><td class="px-6 py-4 font-bold">${formatRp(p.Nominal)}</td><td class="px-6 py-4"><span class="px-2.5 py-1 rounded-md border text-xs font-semibold ${bCol}">${p.Metode}</span></td><td class="px-6 py-4">${p['Nama Pelanggan']}</td><td class="px-6 py-4 text-xs font-medium text-textSec">${p.Status}</td><td class="px-6 py-4 text-center"><button onclick="deletePenjualan('${p.ID}')" class="p-1.5 text-danger hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`;
                 
-                // Card Mobile
                 cd.innerHTML += `<div class="p-4 flex justify-between items-center"><div class="space-y-1"><div class="font-bold text-base text-textMain">${formatRp(p.Nominal)}</div><div class="text-xs text-textSec">${String(p.Tanggal).substring(0,10)} ${p['Nama Pelanggan'] !== '-' ? '• ' + p['Nama Pelanggan'] : ''}</div></div><div class="flex items-center space-x-2"><span class="px-2.5 py-1 rounded-md border text-[10px] font-bold ${bCol}">${p.Metode}</span><button onclick="deletePenjualan('${p.ID}')" class="p-1.5 text-danger hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`;
             });
             lucide.createIcons();
@@ -942,19 +1064,21 @@
             if(res) {
                 showToast("Penjualan berhasil disimpan!");
                 document.getElementById('formPenjualan').reset();
+                updateLiveRp('pjNominal', 'pjNominalFmt');
                 toggleCamidu('Cash');
                 closeModal('modalPenjualan');
                 loadPenjualan();
             }
         }
 
-        async function deletePenjualan(id) {
-            if(!confirm("Yakin ingin menghapus penjualan ini?")) return;
-            const res = await apiRequest('hapusPenjualan', { id });
-            if(res) {
-                showToast("Penjualan berhasil dihapus");
-                loadPenjualan();
-            }
+        function deletePenjualan(id) {
+            openConfirm("Hapus Penjualan?", "Apakah Anda yakin ingin menghapus catatan penjualan ini?", async () => {
+                const res = await apiRequest('hapusPenjualan', { id });
+                if(res) {
+                    showToast("Penjualan berhasil dihapus");
+                    loadPenjualan();
+                }
+            });
         }
 
         async function loadPiutang() {
@@ -980,7 +1104,6 @@
             document.getElementById('statTotalPiutang').innerText = formatRp(totalSisa);
             document.getElementById('statCountPiutang').innerText = `${countPelanggan} Orang`;
 
-            // Load total riwayat pembayaran
             const history = await apiRequest('getRiwayatPembayaranPiutang');
             let totalBayar = 0;
             if(history) history.forEach(h => totalBayar += parseFloat(h.Nominal));
@@ -999,6 +1122,7 @@
             document.getElementById('bpTotalHutang').innerText = formatRp(total);
             document.getElementById('bpSisa').innerText = formatRp(sisa);
             document.getElementById('bpNominal').value = sisa;
+            updateLiveRp('bpNominal', 'bpNominalFmt');
             document.getElementById('bpTanggal').value = todayStr;
             maxSisaHutang = sisa;
             openModal('modalBayarPiutang');
@@ -1075,34 +1199,177 @@
             if(res) {
                 showToast("Pengeluaran berhasil dicatat!");
                 document.getElementById('formPengeluaran').reset();
+                updateLiveRp('pgNominal', 'pgNominalFmt');
                 closeModal('modalPengeluaran');
                 loadPengeluaran();
             }
         }
 
-        async function deletePengeluaran(id) {
-            if(!confirm("Hapus catatan pengeluaran ini?")) return;
-            const res = await apiRequest('hapusPengeluaran', { id });
-            if(res) {
-                showToast("Pengeluaran berhasil dihapus");
-                loadPengeluaran();
-            }
+        function deletePengeluaran(id) {
+            openConfirm("Hapus Pengeluaran?", "Yakin ingin menghapus catatan pengeluaran ini?", async () => {
+                const res = await apiRequest('hapusPengeluaran', { id });
+                if(res) {
+                    showToast("Pengeluaran berhasil dihapus");
+                    loadPengeluaran();
+                }
+            });
         }
 
-        // Subtabs Bahan Baku
         function switchBahanTab(tab) {
             if(tab === 'master') {
                 document.getElementById('subtabBahanMaster').classList.remove('hidden');
                 document.getElementById('subtabBahanPembelian').classList.add('hidden');
+                document.getElementById('subtabBahanPemakaian').classList.add('hidden');
                 document.getElementById('tabBahanMaster').className = "pb-3 border-b-2 border-primary text-primary transition";
                 document.getElementById('tabBahanPembelian').className = "pb-3 border-b-2 border-transparent text-textSec hover:text-textMain transition";
+                document.getElementById('tabBahanPemakaian').className = "pb-3 border-b-2 border-transparent text-textSec hover:text-textMain transition flex items-center";
                 loadBahanMaster();
-            } else {
+            } else if(tab === 'pembelian') {
                 document.getElementById('subtabBahanMaster').classList.add('hidden');
                 document.getElementById('subtabBahanPembelian').classList.remove('hidden');
+                document.getElementById('subtabBahanPemakaian').classList.add('hidden');
                 document.getElementById('tabBahanMaster').className = "pb-3 border-b-2 border-transparent text-textSec hover:text-textMain transition";
                 document.getElementById('tabBahanPembelian').className = "pb-3 border-b-2 border-primary text-primary transition";
+                document.getElementById('tabBahanPemakaian').className = "pb-3 border-b-2 border-transparent text-textSec hover:text-textMain transition flex items-center";
                 loadPembelianBahan();
+            } else {
+                document.getElementById('subtabBahanMaster').classList.add('hidden');
+                document.getElementById('subtabBahanPembelian').classList.add('hidden');
+                document.getElementById('subtabBahanPemakaian').classList.remove('hidden');
+                document.getElementById('tabBahanMaster').className = "pb-3 border-b-2 border-transparent text-textSec hover:text-textMain transition";
+                document.getElementById('tabBahanPembelian').className = "pb-3 border-b-2 border-transparent text-textSec hover:text-textMain transition";
+                document.getElementById('tabBahanPemakaian').className = "pb-3 border-b-2 border-primary text-primary transition flex items-center";
+                loadPemakaianBahan();
+            }
+        }
+
+        async function loadPemakaianBahan() {
+            const bulan = document.getElementById('pemBulan').value;
+            const tahun = document.getElementById('pemTahun').value;
+
+            const res = await apiRequest('getPemakaianBahan', { bulan, tahun });
+            const tb = document.getElementById('tablePemakaianBahan');
+            const cd = document.getElementById('cardPemakaianBahan');
+            tb.innerHTML = ''; cd.innerHTML = '';
+
+            if(!res || !res.data || !res.data.length) {
+                tb.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-textSec">Belum ada data bahan baku</td></tr>`;
+                cd.innerHTML = `<div class="p-6 text-center text-textSec text-sm">Belum ada data bahan baku</div>`;
+                document.getElementById('pemTotalBiaya').innerText = "Rp 0";
+                return;
+            }
+
+            document.getElementById('pemTotalBiaya').innerText = formatRp(res.totalBiayaPemakaian);
+
+            res.data.forEach(item => {
+                const terpakaiFmt = `${item.terpakai} ${item.satuan}`;
+                const biayaFmt = formatRp(item.biayaTerpakai);
+
+                tb.innerHTML += `<tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 font-semibold text-textMain">${item.namaBahan}</td>
+                    <td class="px-6 py-4">${item.stokAwal} ${item.satuan}</td>
+                    <td class="px-6 py-4 text-primary font-medium">+${item.pembelian} ${item.satuan}</td>
+                    <td class="px-6 py-4 font-bold text-textMain">${item.stokAkhir} ${item.satuan}</td>
+                    <td class="px-6 py-4 font-bold text-warning">${terpakaiFmt}</td>
+                    <td class="px-6 py-4 font-bold text-danger">${biayaFmt}</td>
+                </tr>`;
+
+                cd.innerHTML += `<div class="p-4 bg-white rounded-xl border border-gray-100 mb-2">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <div class="font-bold text-textMain text-sm">${item.namaBahan}</div>
+                            <div class="text-xs text-textSec">Stok Awal: ${item.stokAwal} | Beli: +${item.pembelian} | Stok Akhir: ${item.stokAkhir}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold text-danger text-sm">${biayaFmt}</div>
+                            <div class="text-[10px] text-warning font-bold">Terpakai: ${terpakaiFmt}</div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+        }
+
+        let currentPemakaianData = [];
+        async function openCatatPemakaianModal() {
+            const bulan = document.getElementById('pemBulan').value;
+            const tahun = document.getElementById('pemTahun').value;
+            const container = document.getElementById('containerCatatPemakaianItems');
+            container.innerHTML = `<div class="text-center py-6 text-xs text-textSec">Memuat bahan baku...</div>`;
+            openModal('modalCatatPemakaian');
+
+            const res = await apiRequest('getPemakaianBahan', { bulan, tahun });
+            if(!res || !res.data || !res.data.length) {
+                container.innerHTML = `<div class="text-center py-6 text-xs text-textSec">Tidak ada master bahan baku. Silakan tambah master bahan baku dulu.</div>`;
+                return;
+            }
+
+            currentPemakaianData = res.data;
+            container.innerHTML = '';
+
+            res.data.forEach((item, idx) => {
+                container.innerHTML += `
+                    <div class="p-3 bg-gray-50 rounded-2xl border border-gray-200 text-xs space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-sm text-textMain">${item.namaBahan}</span>
+                            <span class="text-textSec text-[11px]">Formula: (${item.stokAwal} + ${item.pembelian}) - Stok Akhir</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 items-center">
+                            <div>
+                                <label class="block text-[10px] font-semibold text-textSec mb-1">Stok Akhir Fisik (${item.satuan})</label>
+                                <input type="number" id="pemInputStok_${idx}" min="0" value="${item.stokAkhir}" oninput="calcLivePemakaianItem(${idx})" class="w-full border border-gray-300 rounded-xl p-2 font-bold text-sm outline-none focus:border-primary bg-white">
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[10px] text-textSec block">Terpakai:</span>
+                                <span id="pemCalcTerpakai_${idx}" class="font-bold text-warning text-xs">${item.terpakai} ${item.satuan}</span>
+                                <span id="pemCalcBiaya_${idx}" class="font-bold text-danger text-xs block">${formatRp(item.biayaTerpakai)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function calcLivePemakaianItem(idx) {
+            const item = currentPemakaianData[idx];
+            if(!item) return;
+            const stokAkhirInput = parseFloat(document.getElementById(`pemInputStok_${idx}`).value) || 0;
+            const terpakai = Math.max(0, item.stokAwal + item.pembelian - stokAkhirInput);
+            const biaya = terpakai * item.hargaSatuan;
+
+            document.getElementById(`pemCalcTerpakai_${idx}`).innerText = `${terpakai} ${item.satuan}`;
+            document.getElementById(`pemCalcBiaya_${idx}`).innerText = formatRp(biaya);
+        }
+
+        async function submitCatatPemakaian(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmitCatatPem');
+            btn.innerText = "Menyimpan...";
+            btn.disabled = true;
+
+            const bulan = document.getElementById('pemBulan').value;
+            const tahun = document.getElementById('pemTahun').value;
+
+            const itemsPayload = currentPemakaianData.map((item, idx) => {
+                const inputVal = document.getElementById(`pemInputStok_${idx}`).value;
+                return {
+                    namaBahan: item.namaBahan,
+                    stokAkhir: parseFloat(inputVal) || 0
+                };
+            });
+
+            const res = await apiRequest('simpanPemakaianBahan', {
+                bulan: bulan,
+                tahun: tahun,
+                items: itemsPayload
+            });
+
+            btn.innerText = "Simpan Catatan Pemakaian";
+            btn.disabled = false;
+
+            if(res) {
+                showToast("Catatan stok akhir dan pemakaian bahan berhasil disimpan!");
+                closeModal('modalCatatPemakaian');
+                loadPemakaianBahan();
             }
         }
 
@@ -1148,24 +1415,28 @@
             if(res) {
                 showToast("Bahan baku berhasil disimpan!");
                 document.getElementById('formBahan').reset();
+                updateLiveRp('bbHarga', 'bbHargaFmt');
                 closeModal('modalBahan');
                 loadBahanMaster();
             }
         }
 
-        async function deleteBahanBaku(id) {
-            if(!confirm("Hapus bahan baku ini?")) return;
-            const res = await apiRequest('hapusBahanBaku', { id });
-            if(res) {
-                showToast("Bahan baku berhasil dihapus");
-                loadBahanMaster();
-            }
+        function deleteBahanBaku(id) {
+            openConfirm("Hapus Bahan Baku?", "Yakin ingin menghapus master bahan baku ini?", async () => {
+                const res = await apiRequest('hapusBahanBaku', { id });
+                if(res) {
+                    showToast("Bahan baku berhasil dihapus");
+                    loadBahanMaster();
+                }
+            });
         }
 
         function calcPbTotal() {
             const j = parseFloat(document.getElementById('pbJumlah').value) || 0;
             const h = parseFloat(document.getElementById('pbHarga').value) || 0;
-            document.getElementById('pbTotal').value = j * h;
+            const tot = j * h;
+            document.getElementById('pbTotal').value = tot;
+            updateLiveRp('pbTotal', 'pbTotalFmt');
         }
 
         async function loadPembelianBahan() {
@@ -1208,6 +1479,7 @@
             if(res) {
                 showToast("Pembelian bahan berhasil dicatat!");
                 document.getElementById('formPembelianBahan').reset();
+                updateLiveRp('pbTotal', 'pbTotalFmt');
                 closeModal('modalPembelianBahan');
                 loadPembelianBahan();
             }
@@ -1235,7 +1507,6 @@
         }
 
         window.onload = function() {
-            // Restore saved shop metadata
             const name = localStorage.getItem("warkop_name") || "Warkop Jaya Pesisir";
             const owner = localStorage.getItem("warkop_owner") || "";
             const url = localStorage.getItem("warkop_api_url") || "";
@@ -1248,10 +1519,15 @@
 
             if(owner) document.getElementById('dashWelcome').innerText = `Selamat datang, ${owner}`;
 
-            // Automatic date defaults for Laporan
             const firstDay = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toLocaleDateString('en-CA');
             document.getElementById('lapStartDate').value = firstDay;
             document.getElementById('lapEndDate').value = todayStr;
+
+            // Set default pilihan bulan & tahun di pemakaian bahan
+            const currentMonth = new Date().getMonth() + 1;
+            const currentYear = new Date().getFullYear();
+            if(document.getElementById('pemBulan')) document.getElementById('pemBulan').value = currentMonth;
+            if(document.getElementById('pemTahun')) document.getElementById('pemTahun').value = currentYear;
 
             if(!url) {
                 nav('pengaturan');
