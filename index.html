@@ -40,7 +40,7 @@
     <style>
         body { background-color: #F7F8FC; color: #1F2937; }
         .page { display: none; animation: fadeIn 0.25s ease-in-out; }
-        .page.active { display: block; }
+        .page.active { display: block !important; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
         
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -63,7 +63,6 @@
 
         .modal-overlay { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px); }
         
-        /* Toast Notification Styling */
         #toast { 
             transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1); 
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
@@ -77,7 +76,6 @@
         }
         .animate-pulse-glow { animation: pulseGlow 2s infinite ease-in-out; }
 
-        /* Print Styling for Report PDF */
         @media print {
             header, aside, .bottom-nav, button, #bannerSyncPending, .modal-overlay, #btnSyncHeader { display: none !important; }
             main { margin-left: 0 !important; padding: 0 !important; }
@@ -91,7 +89,7 @@
 </head>
 <body class="font-sans antialiased">
 
-    <!-- Modern Animated Toast Notification -->
+    <!-- Toast Notification -->
     <div id="toast" class="toast-hidden fixed top-6 left-1/2 transform -translate-x-1/2 z-[100] px-5 py-3 rounded-2xl font-medium text-white flex items-center space-x-3 text-sm">
         <div id="toastIconWrap" class="w-6 h-6 rounded-full flex items-center justify-center bg-white/20">
             <i id="toastIcon" data-lucide="check" class="w-4 h-4 stroke-[2.5]"></i>
@@ -99,7 +97,6 @@
         <span id="toastMessage">Pesan</span>
     </div>
 
-    <!-- Top Application Header -->
     <header class="fixed top-0 w-full bg-white shadow-sm z-30 h-16 flex items-center justify-between px-3 md:px-8 border-b border-gray-100">
         <div class="flex items-center space-x-2.5">
             <div class="w-9 h-9 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-sm">W</div>
@@ -110,19 +107,16 @@
         </div>
         
         <div class="flex items-center space-x-2 text-xs">
-            <!-- Manual Sync Button -->
             <button onclick="triggerSyncData()" id="btnSyncHeader" class="hidden items-center bg-amber-50 border border-amber-200 text-amber-700 px-2.5 py-1.5 rounded-full font-semibold hover:bg-amber-100 transition animate-pulse-glow" title="Klik untuk menyinkronkan data offline">
                 <i data-lucide="upload-cloud" class="w-3.5 h-3.5 mr-1.5"></i>
                 <span id="syncPendingCount">0 Offline</span>
             </button>
 
-            <!-- Pull Data Cloud Button -->
             <button onclick="pullDataFromCloud(true)" id="btnPullHeader" class="hidden sm:flex items-center bg-blue-50 border border-blue-200 text-primary px-2.5 py-1.5 rounded-full font-medium hover:bg-blue-100 transition" title="Tarik data terbaru dari Google Sheets">
                 <i data-lucide="cloud-download" class="w-3.5 h-3.5 mr-1"></i>
                 <span>Tarik Data</span>
             </button>
 
-            <!-- Connection Indicator -->
             <div class="flex items-center bg-gray-50 border border-gray-200 px-2.5 py-1.5 rounded-full">
                 <div id="connStatusDot" class="w-2.5 h-2.5 rounded-full bg-danger mr-1.5"></div>
                 <span id="connStatusText" class="font-medium text-[11px] md:text-xs text-textSec">Lokal</span>
@@ -136,7 +130,7 @@
     <aside class="hidden md:flex sidebar fixed top-16 left-0 h-[calc(100vh-4rem)] w-64 bg-white border-r border-gray-100 z-20 flex-col pt-6 pb-4 overflow-y-auto">
         <div class="px-6 mb-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Menu Utama</div>
         <nav class="flex flex-col space-y-1 px-3 mb-6">
-            <button onclick="nav('dashboard')" id="nav-dashboard" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-textSec hover:bg-gray-50 nav-btn transition"><i data-lucide="home" class="w-5 h-5"></i><span class="font-medium text-sm">Dashboard</span></button>
+            <button onclick="nav('dashboard')" id="nav-dashboard" class="flex items-center space-x-3 px-4 py-3 rounded-xl bg-blue-50 text-primary nav-btn transition"><i data-lucide="home" class="w-5 h-5"></i><span class="font-medium text-sm">Dashboard</span></button>
             <button onclick="nav('penjualan')" id="nav-penjualan" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-textSec hover:bg-gray-50 nav-btn transition"><i data-lucide="receipt" class="w-5 h-5"></i><span class="font-medium text-sm">Penjualan</span></button>
             <button onclick="nav('piutang')" id="nav-piutang" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-textSec hover:bg-gray-50 nav-btn transition"><i data-lucide="users" class="w-5 h-5"></i><span class="font-medium text-sm">Piutang (Camidu)</span></button>
             <button onclick="nav('pengeluaran')" id="nav-pengeluaran" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-textSec hover:bg-gray-50 nav-btn transition"><i data-lucide="wallet" class="w-5 h-5"></i><span class="font-medium text-sm">Pengeluaran</span></button>
@@ -149,12 +143,11 @@
         </nav>
     </aside>
 
-    <!-- Main Content Container -->
     <main class="main-content md:ml-64 pt-20 md:pt-24 pb-28 md:pb-12 px-4 md:px-8 min-h-screen">
         
-        <!-- ==================== PAGE: DASHBOARD ==================== -->
-        <section id="page-dashboard" class="page">
-            <!-- Offline Pending Sync Banner -->
+        <!-- PAGE: DASHBOARD (Default active agar tidak pernah blank) -->
+        <section id="page-dashboard" class="page active">
+            <!-- Banner Sinkron Offline -->
             <div id="bannerSyncPending" class="hidden mb-6 bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4 rounded-2xl shadow-md flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div class="flex items-center space-x-3">
                     <div class="p-2 bg-white/20 rounded-xl"><i data-lucide="wifi-off" class="w-6 h-6"></i></div>
@@ -168,7 +161,7 @@
                 </button>
             </div>
 
-            <!-- Welcome & Quick Filter -->
+            <!-- Header Welcome & Filter -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <div>
                     <h2 class="text-2xl font-bold text-textMain" id="dashWelcome">Selamat datang, Owner</h2>
@@ -181,7 +174,7 @@
                 </div>
             </div>
 
-            <!-- Financial Metric Cards -->
+            <!-- Card Keuangan -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 mb-8">
                 <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
                     <div class="flex items-center justify-between mb-3"><span class="text-xs text-textSec font-medium">Penjualan Hari Ini</span><div class="p-2 bg-green-50 text-success rounded-xl"><i data-lucide="banknote" class="w-4 h-4 md:w-5 md:h-5"></i></div></div>
@@ -201,7 +194,7 @@
                 </div>
             </div>
 
-            <!-- Dashboard Charts -->
+            <!-- Grafik Dashboard -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm md:col-span-2">
                     <div class="flex justify-between items-center mb-4">
@@ -220,7 +213,7 @@
                 </div>
             </div>
 
-            <!-- Dashboard Recent Items -->
+            <!-- Aktivitas Terbaru -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
                     <div class="flex justify-between items-center mb-4">
@@ -252,7 +245,7 @@
             </div>
         </section>
 
-        <!-- ==================== PAGE: PENJUALAN ==================== -->
+        <!-- PAGE: PENJUALAN -->
         <section id="page-penjualan" class="page">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <div>
@@ -286,7 +279,7 @@
             </div>
         </section>
 
-        <!-- ==================== PAGE: PIUTANG / CAMIDU ==================== -->
+        <!-- PAGE: PIUTANG / CAMIDU -->
         <section id="page-piutang" class="page">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <div>
@@ -335,7 +328,7 @@
             </div>
         </section>
 
-        <!-- ==================== PAGE: PENGELUARAN ==================== -->
+        <!-- PAGE: PENGELUARAN -->
         <section id="page-pengeluaran" class="page">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <div>
@@ -367,7 +360,7 @@
             </div>
         </section>
 
-        <!-- ==================== PAGE: BAHAN BAKU ==================== -->
+        <!-- PAGE: BAHAN BAKU -->
         <section id="page-bahan" class="page">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <div>
@@ -380,14 +373,12 @@
                 </div>
             </div>
 
-            <!-- Tab Buttons -->
             <div class="flex border-b border-gray-200 mb-6 space-x-4 md:space-x-6 text-xs md:text-sm font-semibold">
                 <button onclick="switchBahanTab('master')" id="tabBahanMaster" class="pb-3 border-b-2 border-primary text-primary transition">Data Bahan</button>
                 <button onclick="switchBahanTab('pembelian')" id="tabBahanPembelian" class="pb-3 border-b-2 border-transparent text-textSec hover:text-textMain transition">Pembelian Bahan</button>
                 <button onclick="switchBahanTab('pemakaian')" id="tabBahanPemakaian" class="pb-3 border-b-2 border-transparent text-textSec hover:text-textMain transition flex items-center"><i data-lucide="calendar-check" class="w-4 h-4 mr-1"></i> Pemakaian Bulanan</button>
             </div>
 
-            <!-- Subtab: Data Master Bahan -->
             <div id="subtabBahanMaster" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div class="hidden md:block overflow-x-auto">
                     <table class="w-full text-left text-sm whitespace-nowrap">
@@ -409,7 +400,6 @@
                 <div class="md:hidden divide-y divide-gray-100 p-2" id="cardBahanMaster"></div>
             </div>
 
-            <!-- Subtab: Pembelian Bahan -->
             <div id="subtabBahanPembelian" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hidden">
                 <div class="hidden md:block overflow-x-auto">
                     <table class="w-full text-left text-sm whitespace-nowrap">
@@ -431,7 +421,6 @@
                 <div class="md:hidden divide-y divide-gray-100 p-2" id="cardPembelianBahan"></div>
             </div>
 
-            <!-- Subtab: Pemakaian Bulanan -->
             <div id="subtabBahanPemakaian" class="hidden space-y-6">
                 <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
                     <div class="flex items-center space-x-2 text-xs font-medium">
@@ -481,7 +470,7 @@
             </div>
         </section>
 
-        <!-- ==================== PAGE: LAPORAN ==================== -->
+        <!-- PAGE: LAPORAN -->
         <section id="page-laporan" class="page">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <div>
@@ -499,7 +488,6 @@
                 </div>
             </div>
 
-            <!-- Header Cetak Khusus Print / Export PDF -->
             <div class="hidden print-only mb-6 text-center border-b pb-4">
                 <h1 class="text-2xl font-bold text-primary" id="printHeaderShop">Warkop Jaya Pesisir</h1>
                 <p class="text-sm text-gray-600">Laporan Rekapitulasi Keuangan</p>
@@ -538,7 +526,6 @@
                 <div class="text-3xl md:text-4xl font-bold tracking-tight" id="lapLabaBersih">Rp 0</div>
             </div>
 
-            <!-- Tanda Tangan Cetak -->
             <div class="hidden print-only mt-12 grid grid-cols-2 text-center text-xs">
                 <div>
                     <p class="mb-12">Dibuat oleh,</p>
@@ -551,12 +538,11 @@
             </div>
         </section>
 
-        <!-- ==================== PAGE: PENGATURAN ==================== -->
+        <!-- PAGE: PENGATURAN -->
         <section id="page-pengaturan" class="page">
             <h2 class="text-2xl font-bold text-textMain mb-6">Pengaturan Sistem</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Identitas Warkop -->
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                     <h3 class="font-bold text-lg mb-4 flex items-center text-primary"><i data-lucide="store" class="w-5 h-5 mr-2"></i> Identitas Warkop</h3>
                     <div class="space-y-4 text-sm">
@@ -572,7 +558,6 @@
                     </div>
                 </div>
 
-                <!-- Konfigurasi Backend -->
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                     <h3 class="font-bold text-lg mb-4 flex items-center text-primary"><i data-lucide="database" class="w-5 h-5 mr-2"></i> Konfigurasi Backend</h3>
                     <p class="text-xs text-textSec mb-4 leading-relaxed">
@@ -594,7 +579,6 @@
                     </div>
                 </div>
 
-                <!-- Backup & Restore Data Local -->
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm md:col-span-2">
                     <h3 class="font-bold text-lg mb-2 flex items-center text-primary"><i data-lucide="hard-drive" class="w-5 h-5 mr-2"></i> Backup & Restore Data Local</h3>
                     <p class="text-xs text-textSec mb-4">
@@ -615,42 +599,33 @@
 
     </main>
 
-    <!-- Mobile Bottom Navigation (Tombol Tambah [+] di Tengah) -->
+    <!-- Bottom Nav Mobile -->
     <nav class="bottom-nav">
-        <!-- 1. Dashboard -->
-        <button onclick="nav('dashboard')" id="mob-dashboard" class="flex flex-col items-center justify-center py-1.5 text-textSec flex-1 transition">
+        <button onclick="nav('dashboard')" id="mob-dashboard" class="flex flex-col items-center justify-center py-1.5 text-primary flex-1 transition">
             <i data-lucide="home" class="w-5 h-5 mb-0.5"></i>
             <span class="text-[10px] font-medium">Dashboard</span>
         </button>
-
-        <!-- 2. Jual -->
         <button onclick="nav('penjualan')" id="mob-penjualan" class="flex flex-col items-center justify-center py-1.5 text-textSec flex-1 transition">
             <i data-lucide="receipt" class="w-5 h-5 mb-0.5"></i>
             <span class="text-[10px] font-medium">Jual</span>
         </button>
-
-        <!-- 3. Tombol Tambah (+) Melayang Persis di Tengah -->
         <div class="flex flex-col items-center justify-center flex-1 relative">
             <button onclick="openModal('modalMenuAction')" class="-top-5 relative w-[52px] h-[52px] bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/40 border-4 border-white hover:scale-105 active:scale-95 transition-transform" aria-label="Tambah Transaksi">
                 <i data-lucide="plus" class="w-6 h-6 stroke-[2.5]"></i>
             </button>
             <span class="text-[10px] font-medium text-textSec -mt-3.5">Tambah</span>
         </div>
-
-        <!-- 4. Piutang -->
         <button onclick="nav('piutang')" id="mob-piutang" class="flex flex-col items-center justify-center py-1.5 text-textSec flex-1 transition">
             <i data-lucide="users" class="w-5 h-5 mb-0.5"></i>
             <span class="text-[10px] font-medium">Piutang</span>
         </button>
-
-        <!-- 5. Laporan -->
         <button onclick="nav('laporan')" id="mob-laporan" class="flex flex-col items-center justify-center py-1.5 text-textSec flex-1 transition">
             <i data-lucide="bar-chart-3" class="w-5 h-5 mb-0.5"></i>
             <span class="text-[10px] font-medium">Laporan</span>
         </button>
     </nav>
 
-    <!-- Modal: Action Menu Mobile -->
+    <!-- Modal Menu Action Mobile -->
     <div id="modalMenuAction" class="fixed inset-0 modal-overlay hidden z-50 flex items-end justify-center pb-20 md:items-center md:pb-0">
         <div class="bg-white rounded-t-3xl md:rounded-2xl w-full max-w-sm p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-6"><h3 class="font-bold text-lg">Tambah Data Baru</h3><button onclick="closeModal('modalMenuAction')"><i data-lucide="x" class="w-5 h-5"></i></button></div>
@@ -671,7 +646,7 @@
         </div>
     </div>
 
-    <!-- Modal Konfirmasi Hapus Data -->
+    <!-- Modal Confirm Hapus -->
     <div id="modalConfirmDelete" class="fixed inset-0 modal-overlay hidden z-[60] flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl text-center space-y-4">
             <div class="w-12 h-12 bg-red-100 text-danger rounded-full flex items-center justify-center mx-auto"><i data-lucide="alert-triangle" class="w-6 h-6"></i></div>
@@ -684,7 +659,7 @@
         </div>
     </div>
 
-    <!-- Modal: Form Penjualan -->
+    <!-- Modal Form Penjualan -->
     <div id="modalPenjualan" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-6"><h3 class="font-bold text-xl" id="titleModalPj">Tambah Penjualan</h3><button onclick="closeModal('modalPenjualan')"><i data-lucide="x" class="w-5 h-5"></i></button></div>
@@ -712,7 +687,7 @@
         </div>
     </div>
 
-    <!-- Modal: Pembayaran Piutang -->
+    <!-- Modal Pembayaran Piutang -->
     <div id="modalBayarPiutang" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-6"><h3 class="font-bold text-xl">Pembayaran Piutang</h3><button onclick="closeModal('modalBayarPiutang')"><i data-lucide="x" class="w-5 h-5"></i></button></div>
@@ -740,7 +715,7 @@
         </div>
     </div>
 
-    <!-- Modal: Form Pengeluaran -->
+    <!-- Modal Form Pengeluaran -->
     <div id="modalPengeluaran" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-6"><h3 class="font-bold text-xl" id="titleModalPg">Catat Pengeluaran</h3><button onclick="closeModal('modalPengeluaran')"><i data-lucide="x" class="w-5 h-5"></i></button></div>
@@ -767,7 +742,7 @@
         </div>
     </div>
 
-    <!-- Modal: Form Master Bahan Baku -->
+    <!-- Modal Form Master Bahan Baku -->
     <div id="modalBahan" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-6"><h3 class="font-bold text-xl" id="titleModalBb">Tambah Bahan Baku</h3><button onclick="closeModal('modalBahan')"><i data-lucide="x" class="w-5 h-5"></i></button></div>
@@ -788,7 +763,7 @@
         </div>
     </div>
 
-    <!-- Modal: Form Pembelian Bahan Baku -->
+    <!-- Modal Form Pembelian Bahan Baku -->
     <div id="modalPembelianBahan" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-6"><h3 class="font-bold text-xl">Catat Pembelian Bahan</h3><button onclick="closeModal('modalPembelianBahan')"><i data-lucide="x" class="w-5 h-5"></i></button></div>
@@ -818,7 +793,7 @@
         </div>
     </div>
 
-    <!-- Modal: Form Catat Stok Akhir Bulan -->
+    <!-- Modal Catat Stok Akhir Bulan -->
     <div id="modalCatatPemakaian" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-lg p-6 shadow-2xl max-h-[90vh] flex flex-col">
             <div class="flex justify-between items-center mb-4">
@@ -838,7 +813,17 @@
     </div>
 
     <script>
-        // Bindings secara global
+        // Pengaman pemanggilan Lucide Icons agar tidak menghentikan aplikasi saat CDN bermasalah
+        function safeCreateIcons() {
+            try {
+                if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                    lucide.createIcons();
+                }
+            } catch (e) {
+                console.warn("Lucide icons notice:", e);
+            }
+        }
+
         window.nav = nav;
         window.setConnStatus = setConnStatus;
 
@@ -868,7 +853,6 @@
             updatePendingSyncBadge();
         }
 
-        // Fungsi khusus untuk membersihkan dan menghilangkan duplikasi piutang secara otomatis
         function cleanAndDeduplicatePiutang() {
             const ptList = getLocalStore('piutang');
             if (!ptList || !ptList.length) return [];
@@ -901,7 +885,6 @@
                     normalized.Status = 'Lunas';
                 }
 
-                // Kunci unik untuk deduplikasi
                 let key = '';
                 if (idPj && idPj !== '-') {
                     key = 'PJ_' + idPj;
@@ -914,7 +897,6 @@
                 if (!mapByUniqueKey.has(key)) {
                     mapByUniqueKey.set(key, normalized);
                 } else {
-                    // Jika terdeteksi duplikat, prioritaskan yang sudah tersinkron dan pembayaran terbanyak
                     const existing = mapByUniqueKey.get(key);
                     if (normalized._synced && !existing._synced) {
                         if (existing['Total Dibayar'] > normalized['Total Dibayar']) {
@@ -1136,22 +1118,24 @@
             const toastIconWrap = document.getElementById('toastIconWrap');
             const toastIcon = document.getElementById('toastIcon');
 
+            if(!toast || !toastMsg) return;
+
             toastMsg.innerText = msg;
 
             if (type === 'success') {
                 toast.className = 'toast-hidden fixed top-6 left-1/2 transform -translate-x-1/2 z-[100] px-5 py-3 rounded-2xl font-medium text-white flex items-center space-x-3 text-sm bg-success shadow-xl';
-                toastIconWrap.className = 'w-6 h-6 rounded-full flex items-center justify-center bg-white/20 text-white';
-                toastIcon.setAttribute('data-lucide', 'check');
+                if(toastIconWrap) toastIconWrap.className = 'w-6 h-6 rounded-full flex items-center justify-center bg-white/20 text-white';
+                if(toastIcon) toastIcon.setAttribute('data-lucide', 'check');
             } else if (type === 'warning') {
                 toast.className = 'toast-hidden fixed top-6 left-1/2 transform -translate-x-1/2 z-[100] px-5 py-3 rounded-2xl font-medium text-white flex items-center space-x-3 text-sm bg-warning shadow-xl';
-                toastIconWrap.className = 'w-6 h-6 rounded-full flex items-center justify-center bg-white/20 text-white';
-                toastIcon.setAttribute('data-lucide', 'alert-circle');
+                if(toastIconWrap) toastIconWrap.className = 'w-6 h-6 rounded-full flex items-center justify-center bg-white/20 text-white';
+                if(toastIcon) toastIcon.setAttribute('data-lucide', 'alert-circle');
             } else {
                 toast.className = 'toast-hidden fixed top-6 left-1/2 transform -translate-x-1/2 z-[100] px-5 py-3 rounded-2xl font-medium text-white flex items-center space-x-3 text-sm bg-danger shadow-xl';
-                toastIconWrap.className = 'w-6 h-6 rounded-full flex items-center justify-center bg-white/20 text-white';
-                toastIcon.setAttribute('data-lucide', 'x-circle');
+                if(toastIconWrap) toastIconWrap.className = 'w-6 h-6 rounded-full flex items-center justify-center bg-white/20 text-white';
+                if(toastIcon) toastIcon.setAttribute('data-lucide', 'x-circle');
             }
-            lucide.createIcons();
+            safeCreateIcons();
 
             toast.classList.remove('toast-hidden');
             toast.classList.add('toast-visible');
@@ -1228,9 +1212,7 @@
                         setConnStatus(true);
                         return resJson.data !== undefined ? resJson.data : true;
                     }
-                } catch (e) {
-                    // Fall back ke JSONP
-                }
+                } catch (e) {}
             }
 
             return new Promise((resolve) => {
@@ -1329,7 +1311,6 @@
                 document.getElementById('pbTotal').value = '';
                 updateLiveRp('pbTotal', 'pbTotalFmt');
                 
-                // Populate Dropdown Pilih Bahan dari Master Bahan Baku
                 const pbSelect = document.getElementById('pbNama');
                 const bbList = getLocalStore('bahanBaku');
                 pbSelect.innerHTML = '<option value="">-- Pilih Bahan Baku --</option>';
@@ -1342,7 +1323,7 @@
                     pbSelect.innerHTML = '<option value="">(Belum ada master bahan baku)</option>';
                 }
             }
-            lucide.createIcons();
+            safeCreateIcons();
         }
 
         function closeModal(id) {
@@ -1466,7 +1447,6 @@
             const pgList = getLocalStore('pengeluaran');
             const pbList = getLocalStore('pembelianBahan');
 
-            const now = new Date();
             const currentMonthStr = todayStr.substring(0, 7);
 
             let penHariIni = 0;
@@ -1553,44 +1533,48 @@
             const dates = Object.keys(trendMap).sort();
             const values = dates.map(d => trendMap[d]);
             
-            const trendEl = document.getElementById('trendChart');
-            if(trendEl) {
-                if(trendChartInstance) trendChartInstance.destroy();
-                trendChartInstance = new Chart(trendEl.getContext('2d'), {
-                    type: 'line',
-                    data: {
-                        labels: dates.length ? dates : ['Hari Ini'],
-                        datasets: [{
-                            label: 'Penjualan',
-                            data: values.length ? values : [0],
-                            borderColor: '#0D21A1',
-                            backgroundColor: 'rgba(13, 33, 161, 0.08)',
-                            fill: true,
-                            tension: 0.3
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-                });
-            }
+            try {
+                const trendEl = document.getElementById('trendChart');
+                if(trendEl && typeof Chart !== 'undefined') {
+                    if(trendChartInstance) trendChartInstance.destroy();
+                    trendChartInstance = new Chart(trendEl.getContext('2d'), {
+                        type: 'line',
+                        data: {
+                            labels: dates.length ? dates : ['Hari Ini'],
+                            datasets: [{
+                                label: 'Penjualan',
+                                data: values.length ? values : [0],
+                                borderColor: '#0D21A1',
+                                backgroundColor: 'rgba(13, 33, 161, 0.08)',
+                                fill: true,
+                                tension: 0.3
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                    });
+                }
 
-            const metodeEl = document.getElementById('metodeChart');
-            if(metodeEl) {
-                if(metodeChartInstance) metodeChartInstance.destroy();
-                metodeChartInstance = new Chart(metodeEl.getContext('2d'), {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Cash', 'QRIS', 'Camidu'],
-                        datasets: [{
-                            data: [totalCash, totalQRIS, totalCamidu],
-                            backgroundColor: ['#16A34A', '#0D21A1', '#F59E0B']
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, cutout: '70%' }
-                });
+                const metodeEl = document.getElementById('metodeChart');
+                if(metodeEl && typeof Chart !== 'undefined') {
+                    if(metodeChartInstance) metodeChartInstance.destroy();
+                    metodeChartInstance = new Chart(metodeEl.getContext('2d'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Cash', 'QRIS', 'Camidu'],
+                            datasets: [{
+                                data: [totalCash, totalQRIS, totalCamidu],
+                                backgroundColor: ['#16A34A', '#0D21A1', '#F59E0B']
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, cutout: '70%' }
+                    });
+                }
+            } catch(e) {
+                console.warn("Error rendering charts:", e);
             }
 
             updatePendingSyncBadge();
-            lucide.createIcons();
+            safeCreateIcons();
         }
 
         async function loadPenjualan() {
@@ -1616,7 +1600,7 @@
                 
                 cd.innerHTML += `<div class="p-4 flex justify-between items-center"><div class="space-y-1"><div class="font-bold text-base text-textMain">${formatRp(p.Nominal)} ${syncBadge}</div><div class="text-xs text-textSec">${String(p.Tanggal).substring(0,10)} ${p['Nama Pelanggan'] && p['Nama Pelanggan'] !== '-' ? '• ' + p['Nama Pelanggan'] : ''}</div></div><div class="flex items-center space-x-2"><span class="px-2.5 py-1 rounded-md border text-[10px] font-bold ${bCol}">${p.Metode}</span><button onclick="deletePenjualan('${localId}')" class="p-1.5 text-danger hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`;
             });
-            lucide.createIcons();
+            safeCreateIcons();
         }
 
         async function submitPenjualan(e) {
@@ -1684,7 +1668,6 @@
                 currentPj = currentPj.filter(item => item._localId !== localId && item.ID !== localId);
                 setLocalStore('penjualan', currentPj);
 
-                // Hapus juga piutang yang terikat dengan ID Penjualan ini
                 let currentPt = getLocalStore('piutang');
                 currentPt = currentPt.filter(item => item.IDPenjualan !== localId && item['ID Penjualan'] !== localId && item.ID !== localId && item._localId !== localId);
                 setLocalStore('piutang', currentPt);
@@ -1732,7 +1715,7 @@
                 tb.innerHTML = `<tr><td colspan="7" class="px-6 py-8 text-center text-success font-bold">Tidak ada piutang tertunggak!</td></tr>`;
                 cd.innerHTML = `<div class="p-6 text-center text-success font-bold text-sm">Tidak ada piutang tertunggak!</div>`;
             }
-            lucide.createIcons();
+            safeCreateIcons();
         }
 
         let maxSisaHutang = 0;
@@ -1816,7 +1799,7 @@
 
                 cd.innerHTML += `<div class="p-4 flex justify-between items-center"><div class="space-y-1"><div class="font-bold text-sm text-textMain">${pg.Kategori}</div><div class="text-xs text-textSec">${String(pg.Tanggal).substring(0,10)} • ${pg.Keterangan}</div></div><div class="flex items-center space-x-2"><div class="font-bold text-danger text-sm">${formatRp(pg.Nominal)}</div><button onclick="deletePengeluaran('${localId}')" class="p-1 text-danger hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`;
             });
-            lucide.createIcons();
+            safeCreateIcons();
         }
 
         async function submitPengeluaran(e) {
@@ -1962,7 +1945,7 @@
             });
 
             if(document.getElementById('pemTotalBiaya')) document.getElementById('pemTotalBiaya').innerText = formatRp(totalBiayaPemakaian);
-            lucide.createIcons();
+            safeCreateIcons();
         }
 
         let currentPemakaianData = [];
@@ -2122,7 +2105,7 @@
 
                 cd.innerHTML += `<div class="p-4 flex justify-between items-center"><div class="space-y-1"><div class="font-bold text-sm text-textMain">${bb['Nama Bahan']}</div><div class="text-xs text-textSec">Stok: ${bb['Stok Akhir']} ${bb.Satuan} • ${formatRp(bb['Harga Satuan'])}/${bb.Satuan}</div></div><button onclick="deleteBahanBaku('${localId}')" class="p-1 text-danger hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`;
             });
-            lucide.createIcons();
+            safeCreateIcons();
         }
 
         async function submitBahanBaku(e) {
@@ -2141,7 +2124,7 @@
                 Satuan: document.getElementById('bbSatuan').value,
                 'Harga Satuan': parseFloat(document.getElementById('bbHarga').value) || 0,
                 'Stok Awal': stokAwal,
-                'Stok Akhir': stokAwal, // Otomatis sama dengan Stok Awal
+                'Stok Akhir': stokAwal,
                 _synced: false
             };
 
@@ -2197,7 +2180,7 @@
 
                 cd.innerHTML += `<div class="p-4 flex justify-between items-center"><div class="space-y-1"><div class="font-bold text-sm text-textMain">${pb['Nama Bahan']}</div><div class="text-xs text-textSec">${String(pb.Tanggal).substring(0,10)} • ${pb.Jumlah} unit @ ${formatRp(pb['Harga Satuan'])}</div></div><div class="font-bold text-warning text-sm">${formatRp(pb.Total)}</div></div>`;
             });
-            lucide.createIcons();
+            safeCreateIcons();
         }
 
         async function submitPembelianBahan(e) {
@@ -2321,13 +2304,12 @@
             if(document.getElementById('lapPembelianBahan')) document.getElementById('lapPembelianBahan').innerText = formatRp(totalPembelianBahan);
             if(document.getElementById('lapBiayaBahanTerpakai')) document.getElementById('lapBiayaBahanTerpakai').innerText = formatRp(totalBiayaBahanTerpakai);
 
-            // Beban murni dihitung dari Pengeluaran Operasional + Biaya Bahan Baku Terpakai saja
             const totalBeban = totalPengeluaran + totalBiayaBahanTerpakai;
             if(document.getElementById('lapTotalBeban')) document.getElementById('lapTotalBeban').innerText = formatRp(totalBeban);
 
             const labaSederhana = totalOmzet - totalBeban;
             if(document.getElementById('lapLabaBersih')) document.getElementById('lapLabaBersih').innerText = formatRp(labaSederhana);
-            lucide.createIcons();
+            safeCreateIcons();
         }
 
         function seedDemoDataIfEmpty() {
@@ -2355,9 +2337,9 @@
             }
         }
 
-        window.onload = function() {
-            lucide.createIcons();
-
+        // Jalankan Inisialisasi Aplikasi
+        document.addEventListener('DOMContentLoaded', function() {
+            safeCreateIcons();
             seedDemoDataIfEmpty();
 
             const name = localStorage.getItem("warkop_name") || "Warkop Jaya Pesisir";
@@ -2395,7 +2377,7 @@
             } else {
                 setConnStatus(false);
             }
-        };
+        });
     </script>
 </body>
 </html>
