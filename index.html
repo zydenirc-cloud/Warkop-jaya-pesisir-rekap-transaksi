@@ -13,53 +13,99 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#0D21A1',
-                        background: '#F7F8FC',
-                        card: '#FFFFFF',
-                        textMain: '#1F2937',
-                        textSec: '#6B7280',
-                        success: '#16A34A',
-                        warning: '#F59E0B',
-                        danger: '#EF4444'
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    }
-                }
+        window.nav = nav;
+        window.setConnStatus = setConnStatus;
+
+        let trendChartInstance = null;
+        let metodeChartInstance = null;
+
+        const STORAGE_KEYS = {
+            penjualan: 'warkop_db_penjualan',
+            piutang: 'warkop_db_piutang',
+            pembayaranPiutang: 'warkop_db_pembayaran_piutang',
+            pengeluaran: 'warkop_db_pengeluaran',
+            bahanBaku: 'warkop_db_bahan_baku',
+            pembelianBahan: 'warkop_db_pembelian_bahan',
+            pemakaianBahan: 'warkop_db_pemakaian_bahan'
+        };
+
+        function getLocalStore(key) {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEYS[key])) || [];
+            } catch(e) {
+                return [];
             }
         }
-    </script>
 
-    <!-- Chart.js & Lucide Icons -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+        function setLocalStore(key, dataArray) {
+            localStorage.setItem(STORAGE_KEYS[key], JSON.stringify(dataArray));
+            updatePendingSyncBadge();
+        }
 
-    <style>
-        body { background-color: #F7F8FC; color: #1F2937; }
-        .page { display: none; animation: fadeIn 0.25s ease-in-out; }
-        .page.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-        
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+        // Fungsi khusus untuk membersihkan dan menghilangkan duplikasi piutang secara otomatis
+        function cleanAndDeduplicatePiutang() {
+            const ptList = getLocalStore('piutang');
+            if (!ptList || !ptList.length) return [];
 
-        .bottom-nav { display: none; }
-        @media (max-width: 768px) {
-            .sidebar { display: none; }
-            .main-content { margin-left: 0 !important; padding-bottom: 100px; }
-            .bottom-nav { 
-                display: flex; position: fixed; bottom: 0; width: 100%; 
-                background: white; border-top: 1px solid #E5E7EB; z-index: 40; 
-                justify-content: space-around; align-items: center; padding: 4px 0;
-                padding-bottom: max(8px, env(safe-area-inset-bottom));
-                box-shadow: 0 -4px 15px -2px rgba(0, 0, 0, 0.08);
-            }
+            const mapByUniqueKey = new Map();
+
+            ptList.forEach(item => {
+                const id = item._localId || item.ID || item['ID Piutang'] || item.id;
+                const idPj = item.IDPenjualan || item['ID Penjualan'] || item.idPj || '';
+                
+                const normalized = {
+                    _localId: item._localId || id,
+                    ID: item.ID || item['ID Piutang'] || id,
+                    'ID Piutang': item['ID Piutang'] || item.ID || id,
+                    IDPenjualan: idPj,
+                    'ID Penjualan': idPj,
+                    Tanggal: item.Tanggal || item.tanggal || '',
+                    'Nama Pelanggan': item['Nama Pelanggan'] || item.namaPelanggan || '-',
+                    'Total Hutang': parseFloat(item['Total Hutang'] || item.totalHutang || 0),
+                    'Total Dibayar': parseFloat(item['Total Dibayar'] || item.totalDibayar || 0),
+                    Sisa: parseFloat(item.Sisa !== undefined ? item.Sisa : (item.sisa !== undefined ? item.sisa : item['Total Hutang'])),
+                    Status: item.Status || item.status || 'Belum Lunas',
+                    _synced: !!item._synced
+                };
+
+                if (isNaN(normalized.Sisa)) {
+                    normalized.Sisa = Math.max(0, normalized['Total Hutang'] - normalized['Total Dibayar']);
+                }
+                if (normalized.Sisa <= 0) {
+                    normalized.Status = 'Lunas';
+                }
+
+                // Kunci unik untuk deduplikasi
+                let key = '';
+                if (idPj && idPj !== '-') {
+                    key = 'PJ_' + idPj;
+                } else if (id) {
+                    key = 'ID_' + id;
+                } else {
+                    key = 'NAME_' + normalized['Nama Pelanggan'] + '_' + normalized.Tanggal + '_' + normalized['Total Hutang'];
+                }
+
+                if (!mapByUniqueKey.has(key)) {
+                    mapByUniqueKey.set(key, normalized);
+                } else {
+                    // Jika terdeteksi duplikat, prioritaskan yang sudah tersinkron dan pembayaran terbanyak
+                    const existing = mapByUniqueKey.get(key);
+                    if (normalized._synced && !existing._synced) {
+                        if (existing['Total Dibayar'] > normalized['Total Dibayar']) {
+                            normalized['Total Dibayar'] = existing['Total Dibayar'];
+                            normalized.Sisa = Math.max(0, normalized['Total Hutang'] - normalized['Total Dibayar']);
+                            normalized.Status = normalized.Sisa <= 0 ? 'Lunas' : 'Sebagian';
+                        }
+                        mapByUniqueKey.set(key, normalized);
+                    } else if (normalized['Total Dibayar'] > existing['Total Dibayar']) {
+                        mapByUniqueKey.set(key, normalized);
+                    }
+                }
+            });
+
+            const cleanedList = Array.from(mapByUniqueKey.values());
+            localStorage.setItem(STORAGE_KEYS.piutang, JSON.stringify(cleanedList));
+            return cleanedList;
         }
 
         .modal-overlay { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px); }
@@ -783,6 +829,24 @@
                         <span id="bbHargaFmt" class="text-[11px] font-bold text-primary mt-1 block">Rp 0</span>
                     </div>
                 </div>
+                <div><label class="block text-xs font-semibold text-textSec mb-1">Stok Awal</label><input type="number" id="bbStokAwal" required min="0" class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="0"></div>
+                <button type="submit" id="btnSubmitBb" class="w-full bg-primary hover:bg-blue-800 text-white py-3.5 rounded-xl font-bold shadow-lg transition mt-2">Simpan Bahan Baku</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Form Pembelian Bahan Baku -->
+    <div id="modalPembelianBahan" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl">
+            <div class="flex justify-between items-center mb-6"><h3 class="font-bold text-xl">Catat Pembelian Bahan</h3><button onclick="closeModal('modalPembelianBahan')"><i data-lucide="x" class="w-5 h-5"></i></button></div>
+            <form id="formPembelianBahan" onsubmit="submitPembelianBahan(event)" class="space-y-4">
+                <div><label class="block text-xs font-semibold text-textSec mb-1">Tanggal Beli</label><input type="date" id="pbTanggal" required class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary"></div>
+                <div>
+                    <label class="block text-xs font-semibold text-textSec mb-1">Pilih Bahan Baku</label>
+                    <select id="pbNama" required class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary bg-white" onchange="onPbNamaSelect(this.value)">
+                        <option value="">-- Pilih Bahan Baku --</option>
+                    </select>
+                </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div><label class="block text-xs font-semibold text-textSec mb-1">Stok Awal</label><input type="number" id="bbStokAwal" required min="0" class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="0"></div>
                     <div><label class="block text-xs font-semibold text-textSec mb-1">Stok Akhir</label><input type="number" id="bbStokAkhir" required min="0" class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="0"></div>
@@ -1259,24 +1323,31 @@
             }
             if(id === 'modalPembelianBahan') {
                 document.getElementById('pbTanggal').value = todayStr;
+                
+                // Populate Dropdown Pilih Bahan dari Master Bahan Baku
+                const pbSelect = document.getElementById('pbNama');
+                const bbList = getLocalStore('bahanBaku');
+                pbSelect.innerHTML = '<option value="">-- Pilih Bahan Baku --</option>';
+                if (bbList && bbList.length) {
+                    bbList.forEach(bb => {
+                        const nama = bb['Nama Bahan'];
+                        pbSelect.innerHTML += `<option value="${nama}">${nama} (${bb.Satuan || 'pcs'})</option>`;
+                    });
+                } else {
+                    pbSelect.innerHTML = '<option value="">(Belum ada master bahan baku)</option>';
+                }
             }
             lucide.createIcons();
         }
 
-        function closeModal(id) {
-            const el = document.getElementById(id);
-            if(el) el.classList.add('hidden');
-        }
-
-        function toggleCamidu(val) {
-            const wrap = document.getElementById('wrapPelanggan');
-            const input = document.getElementById('pjPelanggan');
-            if (val === 'Camidu') {
-                wrap.classList.remove('hidden');
-                input.required = true;
-            } else {
-                wrap.classList.add('hidden');
-                input.required = false;
+        function onPbNamaSelect(selectedName) {
+            if (!selectedName) return;
+            const bbList = getLocalStore('bahanBaku');
+            const bb = bbList.find(b => b['Nama Bahan'] === selectedName);
+            if (bb) {
+                const harga = parseFloat(bb['Harga Satuan']) || 0;
+                document.getElementById('pbHarga').value = harga;
+                calcPbTotal();
             }
         }
 
@@ -1587,16 +1658,26 @@
 
         function deletePenjualan(localId) {
             openConfirm("Hapus Penjualan?", "Apakah Anda yakin ingin menghapus catatan penjualan ini?", async () => {
-                let current = getLocalStore('penjualan');
-                current = current.filter(item => item._localId !== localId && item.ID !== localId);
-                setLocalStore('penjualan', current);
-                showToast("Penjualan berhasil dihapus", "warning");
+                let currentPj = getLocalStore('penjualan');
+                currentPj = currentPj.filter(item => item._localId !== localId && item.ID !== localId);
+                setLocalStore('penjualan', currentPj);
+
+                // Hapus juga piutang yang terikat dengan ID Penjualan ini
+                let currentPt = getLocalStore('piutang');
+                currentPt = currentPt.filter(item => item.IDPenjualan !== localId && item['ID Penjualan'] !== localId && item.ID !== localId && item._localId !== localId);
+                setLocalStore('piutang', currentPt);
+
+                showToast("Penjualan & piutang terkait berhasil dihapus", "warning");
                 loadPenjualan();
+                cleanAndDeduplicatePiutang();
+                if (document.getElementById('page-piutang').classList.contains('active')) loadPiutang();
+                if (document.getElementById('page-dashboard').classList.contains('active')) loadDashboard();
             });
         }
 
         async function loadPiutang() {
-            const data = getLocalStore('piutang');
+            // Jalankan pembersihan duplikat otomatis saat membuka menu Piutang
+            const data = cleanAndDeduplicatePiutang();
             data.sort((a, b) => new Date(b.Tanggal) - new Date(a.Tanggal));
 
             const tb = document.getElementById('tablePiutang');
@@ -2031,7 +2112,6 @@
 
             const localId = generateLocalId('BB');
             const stokAwal = parseFloat(document.getElementById('bbStokAwal').value) || 0;
-            const stokAkhir = parseFloat(document.getElementById('bbStokAkhir').value) || stokAwal;
 
             const payload = {
                 _localId: localId,
@@ -2040,7 +2120,7 @@
                 Satuan: document.getElementById('bbSatuan').value,
                 'Harga Satuan': parseFloat(document.getElementById('bbHarga').value) || 0,
                 'Stok Awal': stokAwal,
-                'Stok Akhir': stokAkhir,
+                'Stok Akhir': stokAwal, // Otomatis sama dengan Stok Awal
                 _synced: false
             };
 
@@ -2213,7 +2293,8 @@
             if(document.getElementById('lapPembelianBahan')) document.getElementById('lapPembelianBahan').innerText = formatRp(totalPembelianBahan);
             if(document.getElementById('lapBiayaBahanTerpakai')) document.getElementById('lapBiayaBahanTerpakai').innerText = formatRp(totalBiayaBahanTerpakai);
 
-            const totalBeban = totalPengeluaran + (totalBiayaBahanTerpakai > 0 ? totalBiayaBahanTerpakai : totalPembelianBahan);
+            // Beban murni dihitung dari Pengeluaran Operasional + Biaya Bahan Baku Terpakai saja
+            const totalBeban = totalPengeluaran + totalBiayaBahanTerpakai;
             if(document.getElementById('lapTotalBeban')) document.getElementById('lapTotalBeban').innerText = formatRp(totalBeban);
 
             const labaSederhana = totalOmzet - totalBeban;
