@@ -189,7 +189,13 @@
                     <div class="text-base md:text-2xl font-bold text-warning" id="dashPiutang">Rp 0</div>
                 </div>
                 <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between relative overflow-hidden">
-                    <div class="flex items-center justify-between mb-3"><span class="text-xs text-textSec font-medium">Laba Sederhana</span><div class="p-2 bg-primary/10 text-primary rounded-xl"><i data-lucide="trending-up" class="w-4 h-4 md:w-5 md:h-5"></i></div></div>
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <span class="text-xs text-textSec font-medium">Laba Bersih Sederhana</span>
+                            <span class="text-[10px] text-textSec block">Bulan Ini</span>
+                        </div>
+                        <div class="p-2 bg-primary/10 text-primary rounded-xl"><i data-lucide="trending-up" class="w-4 h-4 md:w-5 md:h-5"></i></div>
+                    </div>
                     <div class="text-base md:text-2xl font-bold text-primary" id="dashLaba">Rp 0</div>
                 </div>
             </div>
@@ -1446,6 +1452,7 @@
             const ptList = getLocalStore('piutang');
             const pgList = getLocalStore('pengeluaran');
             const pbList = getLocalStore('pembelianBahan');
+            const bbList = getLocalStore('bahanBaku');
 
             const currentMonthStr = todayStr.substring(0, 7);
 
@@ -1482,15 +1489,27 @@
                 }
             });
 
-            let pembBulanIni = 0;
-            pbList.forEach(pb => {
-                const tgl = String(pb.Tanggal).substring(0, 10);
-                if (tgl.substring(0, 7) === currentMonthStr) {
-                    pembBulanIni += parseFloat(pb.Total) || 0;
-                }
+            // Perhitungan Biaya Bahan Terpakai Bulan Ini (HPP) agar sama dengan menu Laporan
+            let totalBiayaBahanTerpakaiBulanIni = 0;
+            bbList.forEach(bb => {
+                const stokAwal = parseFloat(bb['Stok Awal']) || 0;
+                const stokAkhir = parseFloat(bb['Stok Akhir']) || 0;
+                const hargaSatuan = parseFloat(bb['Harga Satuan']) || 0;
+
+                let pembBahan = 0;
+                pbList.forEach(pb => {
+                    const tgl = String(pb.Tanggal).substring(0, 7);
+                    if (pb['Nama Bahan'] === bb['Nama Bahan'] && tgl === currentMonthStr) {
+                        pembBahan += parseFloat(pb.Jumlah) || 0;
+                    }
+                });
+
+                const terpakai = Math.max(0, stokAwal + pembBahan - stokAkhir);
+                totalBiayaBahanTerpakaiBulanIni += (terpakai * hargaSatuan);
             });
 
-            const labaSederhana = penBulanIni - pengBulanIni - pembBulanIni;
+            // Rumus Laba Bersih Sederhana: Omzet - Pengeluaran Operasional - Biaya Bahan Terpakai
+            const labaSederhana = penBulanIni - pengBulanIni - totalBiayaBahanTerpakaiBulanIni;
 
             if(document.getElementById('dashPenHariIni')) document.getElementById('dashPenHariIni').innerText = formatRp(penHariIni);
             if(document.getElementById('dashPenBulanIni')) document.getElementById('dashPenBulanIni').innerText = formatRp(penBulanIni);
