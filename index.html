@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Warkop Jaya Pesisir - Rekap Keuangan</title>
     
-    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,99 +12,53 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        window.nav = nav;
-        window.setConnStatus = setConnStatus;
-
-        let trendChartInstance = null;
-        let metodeChartInstance = null;
-
-        const STORAGE_KEYS = {
-            penjualan: 'warkop_db_penjualan',
-            piutang: 'warkop_db_piutang',
-            pembayaranPiutang: 'warkop_db_pembayaran_piutang',
-            pengeluaran: 'warkop_db_pengeluaran',
-            bahanBaku: 'warkop_db_bahan_baku',
-            pembelianBahan: 'warkop_db_pembelian_bahan',
-            pemakaianBahan: 'warkop_db_pemakaian_bahan'
-        };
-
-        function getLocalStore(key) {
-            try {
-                return JSON.parse(localStorage.getItem(STORAGE_KEYS[key])) || [];
-            } catch(e) {
-                return [];
-            }
-        }
-
-        function setLocalStore(key, dataArray) {
-            localStorage.setItem(STORAGE_KEYS[key], JSON.stringify(dataArray));
-            updatePendingSyncBadge();
-        }
-
-        // Fungsi khusus untuk membersihkan dan menghilangkan duplikasi piutang secara otomatis
-        function cleanAndDeduplicatePiutang() {
-            const ptList = getLocalStore('piutang');
-            if (!ptList || !ptList.length) return [];
-
-            const mapByUniqueKey = new Map();
-
-            ptList.forEach(item => {
-                const id = item._localId || item.ID || item['ID Piutang'] || item.id;
-                const idPj = item.IDPenjualan || item['ID Penjualan'] || item.idPj || '';
-                
-                const normalized = {
-                    _localId: item._localId || id,
-                    ID: item.ID || item['ID Piutang'] || id,
-                    'ID Piutang': item['ID Piutang'] || item.ID || id,
-                    IDPenjualan: idPj,
-                    'ID Penjualan': idPj,
-                    Tanggal: item.Tanggal || item.tanggal || '',
-                    'Nama Pelanggan': item['Nama Pelanggan'] || item.namaPelanggan || '-',
-                    'Total Hutang': parseFloat(item['Total Hutang'] || item.totalHutang || 0),
-                    'Total Dibayar': parseFloat(item['Total Dibayar'] || item.totalDibayar || 0),
-                    Sisa: parseFloat(item.Sisa !== undefined ? item.Sisa : (item.sisa !== undefined ? item.sisa : item['Total Hutang'])),
-                    Status: item.Status || item.status || 'Belum Lunas',
-                    _synced: !!item._synced
-                };
-
-                if (isNaN(normalized.Sisa)) {
-                    normalized.Sisa = Math.max(0, normalized['Total Hutang'] - normalized['Total Dibayar']);
-                }
-                if (normalized.Sisa <= 0) {
-                    normalized.Status = 'Lunas';
-                }
-
-                // Kunci unik untuk deduplikasi
-                let key = '';
-                if (idPj && idPj !== '-') {
-                    key = 'PJ_' + idPj;
-                } else if (id) {
-                    key = 'ID_' + id;
-                } else {
-                    key = 'NAME_' + normalized['Nama Pelanggan'] + '_' + normalized.Tanggal + '_' + normalized['Total Hutang'];
-                }
-
-                if (!mapByUniqueKey.has(key)) {
-                    mapByUniqueKey.set(key, normalized);
-                } else {
-                    // Jika terdeteksi duplikat, prioritaskan yang sudah tersinkron dan pembayaran terbanyak
-                    const existing = mapByUniqueKey.get(key);
-                    if (normalized._synced && !existing._synced) {
-                        if (existing['Total Dibayar'] > normalized['Total Dibayar']) {
-                            normalized['Total Dibayar'] = existing['Total Dibayar'];
-                            normalized.Sisa = Math.max(0, normalized['Total Hutang'] - normalized['Total Dibayar']);
-                            normalized.Status = normalized.Sisa <= 0 ? 'Lunas' : 'Sebagian';
-                        }
-                        mapByUniqueKey.set(key, normalized);
-                    } else if (normalized['Total Dibayar'] > existing['Total Dibayar']) {
-                        mapByUniqueKey.set(key, normalized);
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0D21A1',
+                        background: '#F7F8FC',
+                        card: '#FFFFFF',
+                        textMain: '#1F2937',
+                        textSec: '#6B7280',
+                        success: '#16A34A',
+                        warning: '#F59E0B',
+                        danger: '#EF4444'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
                     }
                 }
-            });
+            }
+        }
+    </script>
 
-            const cleanedList = Array.from(mapByUniqueKey.values());
-            localStorage.setItem(STORAGE_KEYS.piutang, JSON.stringify(cleanedList));
-            return cleanedList;
+    <!-- Chart.js & Lucide Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body { background-color: #F7F8FC; color: #1F2937; }
+        .page { display: none; animation: fadeIn 0.25s ease-in-out; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+        .bottom-nav { display: none; }
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0 !important; padding-bottom: 95px; }
+            .bottom-nav { 
+                display: flex; position: fixed; bottom: 0; width: 100%; 
+                background: white; border-top: 1px solid #E5E7EB; z-index: 40; 
+                justify-content: space-around; align-items: center; padding: 4px 0;
+                padding-bottom: max(6px, env(safe-area-inset-bottom));
+                box-shadow: 0 -4px 15px -2px rgba(0, 0, 0, 0.08);
+            }
         }
 
         .modal-overlay { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px); }
@@ -718,7 +671,7 @@
         </div>
     </div>
 
-    <!-- Modal: Konfirmasi Hapus Data (Tanpa alert bawaan browser) -->
+    <!-- Modal Konfirmasi Hapus Data -->
     <div id="modalConfirmDelete" class="fixed inset-0 modal-overlay hidden z-[60] flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl text-center space-y-4">
             <div class="w-12 h-12 bg-red-100 text-danger rounded-full flex items-center justify-center mx-auto"><i data-lucide="alert-triangle" class="w-6 h-6"></i></div>
@@ -803,7 +756,7 @@
                         <option value="Lainnya">Lainnya</option>
                     </select>
                 </div>
-                <div><label class="block text-xs font-semibold text-textSec mb-1">Keterangan</label><input type="text" id="pgKeterangan" required class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="Beli token listrik, gas, es batu..."></div>
+                <div><label class="block text-xs font-semibold text-textSec mb-1">Keterangan</label><input type="text" id="pgKeterangan" required class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="Beli token listrik, es batu, gas..."></div>
                 <div>
                     <label class="block text-xs font-semibold text-textSec mb-1">Nominal (Rp)</label>
                     <input type="number" id="pgNominal" required min="1" oninput="updateLiveRp('pgNominal', 'pgNominalFmt')" class="w-full border-2 border-gray-200 rounded-xl p-3 text-lg font-bold text-danger outline-none focus:border-primary" placeholder="0">
@@ -822,7 +775,7 @@
                 <input type="hidden" id="bbId">
                 <div><label class="block text-xs font-semibold text-textSec mb-1">Nama Bahan</label><input type="text" id="bbNama" required class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="Biji Kopi Robusta..."></div>
                 <div class="grid grid-cols-2 gap-3">
-                    <div><label class="block text-xs font-semibold text-textSec mb-1">Satuan</label><input type="text" id="bbSatuan" required class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="Kg, Pack, Liter"></div>
+                    <div><label class="block text-xs font-semibold text-textSec mb-1">Satuan</label><input type="text" id="bbSatuan" required class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="Kg, Pack, Kaleng"></div>
                     <div>
                         <label class="block text-xs font-semibold text-textSec mb-1">Harga Satuan (Rp)</label>
                         <input type="number" id="bbHarga" required min="0" oninput="updateLiveRp('bbHarga', 'bbHargaFmt')" class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="0">
@@ -847,22 +800,6 @@
                         <option value="">-- Pilih Bahan Baku --</option>
                     </select>
                 </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div><label class="block text-xs font-semibold text-textSec mb-1">Stok Awal</label><input type="number" id="bbStokAwal" required min="0" class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="0"></div>
-                    <div><label class="block text-xs font-semibold text-textSec mb-1">Stok Akhir</label><input type="number" id="bbStokAkhir" required min="0" class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="0"></div>
-                </div>
-                <button type="submit" id="btnSubmitBb" class="w-full bg-primary hover:bg-blue-800 text-white py-3.5 rounded-xl font-bold shadow-lg transition mt-2">Simpan Bahan Baku</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal: Form Pembelian Bahan Baku -->
-    <div id="modalPembelianBahan" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl">
-            <div class="flex justify-between items-center mb-6"><h3 class="font-bold text-xl">Catat Pembelian Bahan</h3><button onclick="closeModal('modalPembelianBahan')"><i data-lucide="x" class="w-5 h-5"></i></button></div>
-            <form id="formPembelianBahan" onsubmit="submitPembelianBahan(event)" class="space-y-4">
-                <div><label class="block text-xs font-semibold text-textSec mb-1">Tanggal Beli</label><input type="date" id="pbTanggal" required class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary"></div>
-                <div><label class="block text-xs font-semibold text-textSec mb-1">Nama Bahan</label><input type="text" id="pbNama" required class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="Kopi, Gula, Cup..."></div>
                 <div class="grid grid-cols-2 gap-3">
                     <div><label class="block text-xs font-semibold text-textSec mb-1">Jumlah</label><input type="number" id="pbJumlah" required min="1" oninput="calcPbTotal()" class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="0"></div>
                     <div>
@@ -901,7 +838,7 @@
     </div>
 
     <script>
-        // Global bindings
+        // Bindings secara global
         window.nav = nav;
         window.setConnStatus = setConnStatus;
 
@@ -929,6 +866,72 @@
         function setLocalStore(key, dataArray) {
             localStorage.setItem(STORAGE_KEYS[key], JSON.stringify(dataArray));
             updatePendingSyncBadge();
+        }
+
+        // Fungsi khusus untuk membersihkan dan menghilangkan duplikasi piutang secara otomatis
+        function cleanAndDeduplicatePiutang() {
+            const ptList = getLocalStore('piutang');
+            if (!ptList || !ptList.length) return [];
+
+            const mapByUniqueKey = new Map();
+
+            ptList.forEach(item => {
+                const id = item._localId || item.ID || item['ID Piutang'] || item.id;
+                const idPj = item.IDPenjualan || item['ID Penjualan'] || item.idPj || '';
+                
+                const normalized = {
+                    _localId: item._localId || id,
+                    ID: item.ID || item['ID Piutang'] || id,
+                    'ID Piutang': item['ID Piutang'] || item.ID || id,
+                    IDPenjualan: idPj,
+                    'ID Penjualan': idPj,
+                    Tanggal: item.Tanggal || item.tanggal || '',
+                    'Nama Pelanggan': item['Nama Pelanggan'] || item.namaPelanggan || '-',
+                    'Total Hutang': parseFloat(item['Total Hutang'] || item.totalHutang || 0),
+                    'Total Dibayar': parseFloat(item['Total Dibayar'] || item.totalDibayar || 0),
+                    Sisa: parseFloat(item.Sisa !== undefined ? item.Sisa : (item.sisa !== undefined ? item.sisa : item['Total Hutang'])),
+                    Status: item.Status || item.status || 'Belum Lunas',
+                    _synced: !!item._synced
+                };
+
+                if (isNaN(normalized.Sisa)) {
+                    normalized.Sisa = Math.max(0, normalized['Total Hutang'] - normalized['Total Dibayar']);
+                }
+                if (normalized.Sisa <= 0) {
+                    normalized.Status = 'Lunas';
+                }
+
+                // Kunci unik untuk deduplikasi
+                let key = '';
+                if (idPj && idPj !== '-') {
+                    key = 'PJ_' + idPj;
+                } else if (id) {
+                    key = 'ID_' + id;
+                } else {
+                    key = 'NAME_' + normalized['Nama Pelanggan'] + '_' + normalized.Tanggal + '_' + normalized['Total Hutang'];
+                }
+
+                if (!mapByUniqueKey.has(key)) {
+                    mapByUniqueKey.set(key, normalized);
+                } else {
+                    // Jika terdeteksi duplikat, prioritaskan yang sudah tersinkron dan pembayaran terbanyak
+                    const existing = mapByUniqueKey.get(key);
+                    if (normalized._synced && !existing._synced) {
+                        if (existing['Total Dibayar'] > normalized['Total Dibayar']) {
+                            normalized['Total Dibayar'] = existing['Total Dibayar'];
+                            normalized.Sisa = Math.max(0, normalized['Total Hutang'] - normalized['Total Dibayar']);
+                            normalized.Status = normalized.Sisa <= 0 ? 'Lunas' : 'Sebagian';
+                        }
+                        mapByUniqueKey.set(key, normalized);
+                    } else if (normalized['Total Dibayar'] > existing['Total Dibayar']) {
+                        mapByUniqueKey.set(key, normalized);
+                    }
+                }
+            });
+
+            const cleanedList = Array.from(mapByUniqueKey.values());
+            localStorage.setItem(STORAGE_KEYS.piutang, JSON.stringify(cleanedList));
+            return cleanedList;
         }
 
         function generateLocalId(prefix) {
@@ -1081,7 +1084,6 @@
             const res = await apiRequest('getAllData');
 
             if (res && res.penjualan) {
-                // Merge data dari cloud ke local store tanpa menimpa data offline yang belum tersinkron
                 const mergeData = (key, cloudList) => {
                     const currentLocal = getLocalStore(key);
                     const pendingOffline = currentLocal.filter(item => !item._synced);
@@ -1091,7 +1093,6 @@
                         return item;
                     });
 
-                    // Gabungkan data offline lokal dengan data dari cloud
                     const merged = [...pendingOffline, ...normalizedCloud];
                     setLocalStore(key, merged);
                 };
@@ -1107,7 +1108,7 @@
                     setLocalStore('pemakaianBahan', res.pemakaianBahan);
                 }
 
-                if (showNotify) showToast("✓ Data Google Sheets berhasil ditarik ke aplikasi!", "success");
+                if (showNotify) showToast("✓ Data Google Sheets berhasil ditarik!", "success");
                 loadDashboard();
             } else if (showNotify) {
                 showToast("Gagal menarik data dari Google Sheets", "error");
@@ -1323,6 +1324,10 @@
             }
             if(id === 'modalPembelianBahan') {
                 document.getElementById('pbTanggal').value = todayStr;
+                document.getElementById('pbJumlah').value = '';
+                document.getElementById('pbHarga').value = '';
+                document.getElementById('pbTotal').value = '';
+                updateLiveRp('pbTotal', 'pbTotalFmt');
                 
                 // Populate Dropdown Pilih Bahan dari Master Bahan Baku
                 const pbSelect = document.getElementById('pbNama');
@@ -1340,6 +1345,11 @@
             lucide.createIcons();
         }
 
+        function closeModal(id) {
+            const el = document.getElementById(id);
+            if(el) el.classList.add('hidden');
+        }
+
         function onPbNamaSelect(selectedName) {
             if (!selectedName) return;
             const bbList = getLocalStore('bahanBaku');
@@ -1348,6 +1358,18 @@
                 const harga = parseFloat(bb['Harga Satuan']) || 0;
                 document.getElementById('pbHarga').value = harga;
                 calcPbTotal();
+            }
+        }
+
+        function toggleCamidu(val) {
+            const wrap = document.getElementById('wrapPelanggan');
+            const input = document.getElementById('pjPelanggan');
+            if (val === 'Camidu') {
+                wrap.classList.remove('hidden');
+                input.required = true;
+            } else {
+                wrap.classList.add('hidden');
+                input.required = false;
             }
         }
 
@@ -1676,7 +1698,6 @@
         }
 
         async function loadPiutang() {
-            // Jalankan pembersihan duplikat otomatis saat membuka menu Piutang
             const data = cleanAndDeduplicatePiutang();
             data.sort((a, b) => new Date(b.Tanggal) - new Date(a.Tanggal));
 
@@ -2191,6 +2212,13 @@
             const total = jumlah * harga;
             const namaBahan = document.getElementById('pbNama').value;
 
+            if (!namaBahan) {
+                showToast("Pilih bahan baku terlebih dahulu!", "warning");
+                btn.innerText = "Simpan Pembelian";
+                btn.disabled = false;
+                return;
+            }
+
             const payload = {
                 _localId: localId,
                 ID: localId,
@@ -2357,7 +2385,6 @@
 
             if(url) {
                 testConnection().then(() => {
-                    // Hanya otomatis melakukan sinkronisasi dan tarik data saat aplikasi pertama kali dibuka
                     const pending = getPendingSyncData();
                     if (pending.totalCount > 0) {
                         triggerSyncData();
