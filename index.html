@@ -52,19 +52,19 @@
         .bottom-nav { display: none; }
         @media (max-width: 768px) {
             .sidebar { display: none; }
-            .main-content { margin-left: 0 !important; padding-bottom: 105px; }
+            .main-content { margin-left: 0 !important; padding-bottom: 100px; }
             .bottom-nav { 
                 display: flex; position: fixed; bottom: 0; width: 100%; 
                 background: white; border-top: 1px solid #E5E7EB; z-index: 40; 
                 justify-content: space-around; align-items: center; padding: 4px 0;
-                padding-bottom: max(6px, env(safe-area-inset-bottom));
+                padding-bottom: max(8px, env(safe-area-inset-bottom));
                 box-shadow: 0 -4px 15px -2px rgba(0, 0, 0, 0.08);
             }
         }
 
         .modal-overlay { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px); }
         
-        /* Toast Animation */
+        /* Toast Notification Styling */
         #toast { 
             transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1); 
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
@@ -78,9 +78,9 @@
         }
         .animate-pulse-glow { animation: pulseGlow 2s infinite ease-in-out; }
 
-        /* Print Styling for Export PDF */
+        /* Print Styling for Report PDF */
         @media print {
-            header, aside, .bottom-nav, button, #bannerSyncPending, .modal-overlay { display: none !important; }
+            header, aside, .bottom-nav, button, #bannerSyncPending, .modal-overlay, #btnSyncHeader { display: none !important; }
             main { margin-left: 0 !important; padding: 0 !important; }
             body { background-color: #FFFFFF !important; color: #000000 !important; }
             .page { display: block !important; }
@@ -92,7 +92,7 @@
 </head>
 <body class="font-sans antialiased">
 
-    <!-- Notifikasi Toast Mengambang -->
+    <!-- Modern Animated Toast Notification -->
     <div id="toast" class="toast-hidden fixed top-6 left-1/2 transform -translate-x-1/2 z-[100] px-5 py-3 rounded-2xl font-medium text-white flex items-center space-x-3 text-sm">
         <div id="toastIconWrap" class="w-6 h-6 rounded-full flex items-center justify-center bg-white/20">
             <i id="toastIcon" data-lucide="check" class="w-4 h-4 stroke-[2.5]"></i>
@@ -100,7 +100,7 @@
         <span id="toastMessage">Pesan</span>
     </div>
 
-    <!-- Header Atas -->
+    <!-- Top Application Header -->
     <header class="fixed top-0 w-full bg-white shadow-sm z-30 h-16 flex items-center justify-between px-3 md:px-8 border-b border-gray-100">
         <div class="flex items-center space-x-2.5">
             <div class="w-9 h-9 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-sm">W</div>
@@ -111,18 +111,19 @@
         </div>
         
         <div class="flex items-center space-x-2 text-xs">
-            <!-- Tombol Tarik Data dari Cloud -->
-            <button onclick="pullDataFromCloud(true)" id="btnPullDataHeader" class="flex items-center bg-blue-50 border border-blue-200 text-primary px-2.5 py-1.5 rounded-full font-semibold hover:bg-blue-100 transition text-[11px] md:text-xs">
-                <i data-lucide="cloud-download" class="w-3.5 h-3.5 mr-1.5"></i>
-                <span class="hidden sm:inline">Tarik Data</span>
-            </button>
-
-            <!-- Tombol Sinkronisasi Data Offline ke Cloud -->
-            <button onclick="triggerSyncData()" id="btnSyncHeader" class="hidden items-center bg-amber-50 border border-amber-200 text-amber-700 px-2.5 py-1.5 rounded-full font-semibold hover:bg-amber-100 transition animate-pulse-glow">
-                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 mr-1.5 animate-spin"></i>
+            <!-- Manual Sync Button -->
+            <button onclick="triggerSyncData()" id="btnSyncHeader" class="hidden items-center bg-amber-50 border border-amber-200 text-amber-700 px-2.5 py-1.5 rounded-full font-semibold hover:bg-amber-100 transition animate-pulse-glow" title="Klik untuk menyinkronkan data offline">
+                <i data-lucide="upload-cloud" class="w-3.5 h-3.5 mr-1.5"></i>
                 <span id="syncPendingCount">0 Offline</span>
             </button>
 
+            <!-- Pull Data Cloud Button -->
+            <button onclick="pullDataFromCloud(true)" id="btnPullHeader" class="hidden sm:flex items-center bg-blue-50 border border-blue-200 text-primary px-2.5 py-1.5 rounded-full font-medium hover:bg-blue-100 transition" title="Tarik data terbaru dari Google Sheets">
+                <i data-lucide="cloud-download" class="w-3.5 h-3.5 mr-1"></i>
+                <span>Tarik Data</span>
+            </button>
+
+            <!-- Connection Indicator -->
             <div class="flex items-center bg-gray-50 border border-gray-200 px-2.5 py-1.5 rounded-full">
                 <div id="connStatusDot" class="w-2.5 h-2.5 rounded-full bg-danger mr-1.5"></div>
                 <span id="connStatusText" class="font-medium text-[11px] md:text-xs text-textSec">Lokal</span>
@@ -132,7 +133,7 @@
         </div>
     </header>
 
-    <!-- Sidebar Desktop -->
+    <!-- Desktop Sidebar -->
     <aside class="hidden md:flex sidebar fixed top-16 left-0 h-[calc(100vh-4rem)] w-64 bg-white border-r border-gray-100 z-20 flex-col pt-6 pb-4 overflow-y-auto">
         <div class="px-6 mb-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Menu Utama</div>
         <nav class="flex flex-col space-y-1 px-3 mb-6">
@@ -149,17 +150,18 @@
         </nav>
     </aside>
 
-    <!-- Wadah Konten Utama -->
+    <!-- Main Content Container -->
     <main class="main-content md:ml-64 pt-20 md:pt-24 pb-28 md:pb-12 px-4 md:px-8 min-h-screen">
         
-        <!-- ==================== HALAMAN: DASHBOARD ==================== -->
+        <!-- ==================== PAGE: DASHBOARD ==================== -->
         <section id="page-dashboard" class="page">
+            <!-- Offline Pending Sync Banner -->
             <div id="bannerSyncPending" class="hidden mb-6 bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4 rounded-2xl shadow-md flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div class="flex items-center space-x-3">
                     <div class="p-2 bg-white/20 rounded-xl"><i data-lucide="wifi-off" class="w-6 h-6"></i></div>
                     <div>
                         <h4 class="font-bold text-sm">Ada Transaksi Offline Belum Disinkron</h4>
-                        <p class="text-xs text-white/80" id="bannerSyncText">0 data tersimpan secara lokal dan siap diunggah ke Google Sheets.</p>
+                        <p class="text-xs text-white/90" id="bannerSyncText">0 data tersimpan lokal dan siap disinkronkan ke Google Sheets.</p>
                     </div>
                 </div>
                 <button onclick="triggerSyncData()" class="bg-white text-orange-700 hover:bg-orange-50 px-4 py-2 rounded-xl font-bold text-xs shadow-sm transition whitespace-nowrap self-end sm:self-auto flex items-center">
@@ -167,6 +169,7 @@
                 </button>
             </div>
 
+            <!-- Welcome & Quick Filter -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <div>
                     <h2 class="text-2xl font-bold text-textMain" id="dashWelcome">Selamat datang, Owner</h2>
@@ -179,14 +182,14 @@
                 </div>
             </div>
 
-            <!-- Kartu Statistik -->
+            <!-- Financial Metric Cards -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 mb-8">
                 <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
                     <div class="flex items-center justify-between mb-3"><span class="text-xs text-textSec font-medium">Penjualan Hari Ini</span><div class="p-2 bg-green-50 text-success rounded-xl"><i data-lucide="banknote" class="w-4 h-4 md:w-5 md:h-5"></i></div></div>
                     <div class="text-base md:text-2xl font-bold text-textMain" id="dashPenHariIni">Rp 0</div>
                 </div>
                 <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
-                    <div class="flex items-center justify-between mb-3"><span class="text-xs text-textSec font-medium">Penjualan Bulan Ini</span><div class="p-2 bg-blue-50 text-primary rounded-xl"><i data-lucide="receipt" class="w-4 h-4 md:w-5 md:h-5"></i></div></div>
+                    <div class="flex items-center justify-between mb-3"><span class="text-xs text-textSec font-medium">Omzet Bulan Ini</span><div class="p-2 bg-blue-50 text-primary rounded-xl"><i data-lucide="receipt" class="w-4 h-4 md:w-5 md:h-5"></i></div></div>
                     <div class="text-base md:text-2xl font-bold text-textMain" id="dashPenBulanIni">Rp 0</div>
                 </div>
                 <div class="bg-white p-4 rounded-2xl border border-orange-100 shadow-sm flex flex-col justify-between">
@@ -199,25 +202,7 @@
                 </div>
             </div>
 
-            <!-- Pintasan Navigasi Tambahan untuk HP -->
-            <div class="grid grid-cols-2 gap-3 mb-8 md:hidden">
-                <button onclick="nav('pengeluaran')" class="p-3.5 bg-white border border-gray-100 rounded-2xl shadow-sm flex items-center space-x-3 text-left hover:bg-gray-50">
-                    <div class="p-2.5 bg-red-50 text-danger rounded-xl"><i data-lucide="wallet" class="w-5 h-5"></i></div>
-                    <div>
-                        <div class="font-bold text-xs text-textMain">Pengeluaran</div>
-                        <div class="text-[10px] text-textSec">Catat beban & nota</div>
-                    </div>
-                </button>
-                <button onclick="nav('bahan')" class="p-3.5 bg-white border border-gray-100 rounded-2xl shadow-sm flex items-center space-x-3 text-left hover:bg-gray-50">
-                    <div class="p-2.5 bg-amber-50 text-warning rounded-xl"><i data-lucide="package" class="w-5 h-5"></i></div>
-                    <div>
-                        <div class="font-bold text-xs text-textMain">Bahan Baku</div>
-                        <div class="text-[10px] text-textSec">Stok & pemakaian</div>
-                    </div>
-                </button>
-            </div>
-
-            <!-- Grafik -->
+            <!-- Dashboard Charts -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm md:col-span-2">
                     <div class="flex justify-between items-center mb-4">
@@ -236,7 +221,7 @@
                 </div>
             </div>
 
-            <!-- Aktivitas Terbaru -->
+            <!-- Dashboard Recent Items -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
                     <div class="flex justify-between items-center mb-4">
@@ -268,7 +253,7 @@
             </div>
         </section>
 
-        <!-- ==================== HALAMAN: PENJUALAN ==================== -->
+        <!-- ==================== PAGE: PENJUALAN ==================== -->
         <section id="page-penjualan" class="page">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <div>
@@ -302,7 +287,7 @@
             </div>
         </section>
 
-        <!-- ==================== HALAMAN: PIUTANG / CAMIDU ==================== -->
+        <!-- ==================== PAGE: PIUTANG / CAMIDU ==================== -->
         <section id="page-piutang" class="page">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <div>
@@ -351,7 +336,7 @@
             </div>
         </section>
 
-        <!-- ==================== HALAMAN: PENGELUARAN ==================== -->
+        <!-- ==================== PAGE: PENGELUARAN ==================== -->
         <section id="page-pengeluaran" class="page">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <div>
@@ -360,7 +345,7 @@
                 </div>
                 <button onclick="openModal('modalPengeluaran')" class="bg-primary hover:bg-blue-800 text-white px-4 py-2.5 rounded-xl font-semibold text-sm shadow-md flex items-center justify-center transition self-start sm:self-auto"><i data-lucide="plus" class="w-4 h-4 mr-2"></i> Catat Pengeluaran</button>
             </div>
-             <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div class="hidden md:block overflow-x-auto">
                     <table class="w-full text-left text-sm whitespace-nowrap">
                         <thead class="bg-gray-50 text-textSec border-b border-gray-100">
@@ -377,13 +362,13 @@
                         </tbody>
                     </table>
                 </div>
-                 <div class="md:hidden divide-y divide-gray-100 p-2" id="cardPengeluaran">
-                     <div class="p-6 text-center text-textSec text-sm">Memuat data...</div>
-                 </div>
+                <div class="md:hidden divide-y divide-gray-100 p-2" id="cardPengeluaran">
+                    <div class="p-6 text-center text-textSec text-sm">Memuat data...</div>
+                </div>
             </div>
         </section>
 
-        <!-- ==================== HALAMAN: BAHAN BAKU ==================== -->
+        <!-- ==================== PAGE: BAHAN BAKU ==================== -->
         <section id="page-bahan" class="page">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <div>
@@ -396,12 +381,14 @@
                 </div>
             </div>
 
+            <!-- Tab Buttons -->
             <div class="flex border-b border-gray-200 mb-6 space-x-4 md:space-x-6 text-xs md:text-sm font-semibold">
                 <button onclick="switchBahanTab('master')" id="tabBahanMaster" class="pb-3 border-b-2 border-primary text-primary transition">Data Bahan</button>
                 <button onclick="switchBahanTab('pembelian')" id="tabBahanPembelian" class="pb-3 border-b-2 border-transparent text-textSec hover:text-textMain transition">Pembelian Bahan</button>
                 <button onclick="switchBahanTab('pemakaian')" id="tabBahanPemakaian" class="pb-3 border-b-2 border-transparent text-textSec hover:text-textMain transition flex items-center"><i data-lucide="calendar-check" class="w-4 h-4 mr-1"></i> Pemakaian Bulanan</button>
             </div>
 
+            <!-- Subtab: Data Master Bahan -->
             <div id="subtabBahanMaster" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div class="hidden md:block overflow-x-auto">
                     <table class="w-full text-left text-sm whitespace-nowrap">
@@ -423,6 +410,7 @@
                 <div class="md:hidden divide-y divide-gray-100 p-2" id="cardBahanMaster"></div>
             </div>
 
+            <!-- Subtab: Pembelian Bahan -->
             <div id="subtabBahanPembelian" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hidden">
                 <div class="hidden md:block overflow-x-auto">
                     <table class="w-full text-left text-sm whitespace-nowrap">
@@ -444,6 +432,7 @@
                 <div class="md:hidden divide-y divide-gray-100 p-2" id="cardPembelianBahan"></div>
             </div>
 
+            <!-- Subtab: Pemakaian Bulanan -->
             <div id="subtabBahanPemakaian" class="hidden space-y-6">
                 <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
                     <div class="flex items-center space-x-2 text-xs font-medium">
@@ -493,37 +482,25 @@
             </div>
         </section>
 
-        <!-- ==================== HALAMAN: LAPORAN (RESPONSIF PENUH UNTUK HP) ==================== -->
+        <!-- ==================== PAGE: LAPORAN ==================== -->
         <section id="page-laporan" class="page">
-            <div class="mb-5">
-                <h2 class="text-2xl font-bold text-textMain">Laporan Keuangan</h2>
-                <p class="text-xs text-textSec">Rekapitulasi pendapatan, beban, dan laba kotor sederhana</p>
-            </div>
-
-            <!-- Wadah Filter Tanggal & Export yang Adaptif untuk HP & Desktop -->
-            <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full md:w-auto items-center">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-xs text-textSec font-medium whitespace-nowrap">Dari:</span>
-                        <input type="date" id="lapStartDate" class="w-full border border-gray-200 rounded-xl p-2.5 text-xs font-medium outline-none focus:border-primary bg-gray-50/50">
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <span class="text-xs text-textSec font-medium whitespace-nowrap">S/D:</span>
-                        <input type="date" id="lapEndDate" class="w-full border border-gray-200 rounded-xl p-2.5 text-xs font-medium outline-none focus:border-primary bg-gray-50/50">
-                    </div>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-textMain">Laporan Keuangan</h2>
+                    <p class="text-xs text-textSec">Rekapitulasi pendapatan, beban, dan laba kotor sederhana</p>
                 </div>
-
-                <div class="grid grid-cols-2 sm:flex items-center gap-2.5 w-full md:w-auto">
-                    <button onclick="loadLaporan()" class="w-full sm:w-auto bg-primary text-white px-4 py-2.5 rounded-xl font-bold text-xs hover:bg-blue-800 transition shadow-sm flex items-center justify-center">
-                        <i data-lucide="filter" class="w-3.5 h-3.5 mr-1.5"></i> Terapkan
-                    </button>
-                    <button onclick="exportPdfLaporan()" class="w-full sm:w-auto bg-emerald-600 text-white px-4 py-2.5 rounded-xl font-bold text-xs hover:bg-emerald-700 transition shadow-sm flex items-center justify-center whitespace-nowrap">
-                        <i data-lucide="file-text" class="w-3.5 h-3.5 mr-1.5"></i> Export PDF
+                <div class="flex items-center space-x-2 bg-white p-2 rounded-xl border border-gray-200 shadow-sm text-xs self-start sm:self-auto">
+                    <input type="date" id="lapStartDate" class="border rounded-lg p-1.5 outline-none">
+                    <span class="text-textSec">s/d</span>
+                    <input type="date" id="lapEndDate" class="border rounded-lg p-1.5 outline-none">
+                    <button onclick="loadLaporan()" class="bg-primary text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-blue-800 transition">Filter</button>
+                    <button onclick="exportPdfLaporan()" class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center space-x-1">
+                        <i data-lucide="file-text" class="w-3.5 h-3.5 mr-1"></i> Export PDF
                     </button>
                 </div>
             </div>
 
-            <!-- Header Laporan Cetak -->
+            <!-- Header Cetak Khusus Print / Export PDF -->
             <div class="hidden print-only mb-6 text-center border-b pb-4">
                 <h1 class="text-2xl font-bold text-primary" id="printHeaderShop">Warkop Jaya Pesisir</h1>
                 <p class="text-sm text-gray-600">Laporan Rekapitulasi Keuangan</p>
@@ -557,12 +534,12 @@
             <div class="bg-gradient-to-r from-[#0D21A1] to-[#1E3A8A] text-white p-6 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-center gap-4 card-print">
                 <div>
                     <h3 class="text-white/80 font-medium mb-1 text-sm">Laba Bersih Sederhana</h3>
-                    <p class="text-xs text-white/60">Rumus: Omzet - Pengeluaran Operasional - Biaya Bahan Terpakai</p>
+                    <p class="text-xs text-white/60">Rumus: Omzet - Beban Pengeluaran - Biaya Bahan Terpakai</p>
                 </div>
                 <div class="text-3xl md:text-4xl font-bold tracking-tight" id="lapLabaBersih">Rp 0</div>
             </div>
 
-            <!-- Tanda Tangan Format Cetak -->
+            <!-- Tanda Tangan Cetak -->
             <div class="hidden print-only mt-12 grid grid-cols-2 text-center text-xs">
                 <div>
                     <p class="mb-12">Dibuat oleh,</p>
@@ -575,11 +552,12 @@
             </div>
         </section>
 
-        <!-- ==================== HALAMAN: PENGATURAN ==================== -->
+        <!-- ==================== PAGE: PENGATURAN ==================== -->
         <section id="page-pengaturan" class="page">
             <h2 class="text-2xl font-bold text-textMain mb-6">Pengaturan Sistem</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Identitas Warkop -->
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                     <h3 class="font-bold text-lg mb-4 flex items-center text-primary"><i data-lucide="store" class="w-5 h-5 mr-2"></i> Identitas Warkop</h3>
                     <div class="space-y-4 text-sm">
@@ -595,10 +573,11 @@
                     </div>
                 </div>
 
+                <!-- Konfigurasi Backend -->
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                     <h3 class="font-bold text-lg mb-4 flex items-center text-primary"><i data-lucide="database" class="w-5 h-5 mr-2"></i> Konfigurasi Backend</h3>
                     <p class="text-xs text-textSec mb-4 leading-relaxed">
-                        Masukkan URL Google Apps Script hasil deploy Web App Anda di sini. URL disimpan aman di browser (localStorage).
+                        Masukkan URL Google Apps Script hasil deploy Web App Anda di sini. URL disimpan secara aman di browser (localStorage).
                     </p>
                     <div class="space-y-4 text-sm">
                         <div>
@@ -609,8 +588,8 @@
                             <button onclick="saveApiUrl()" class="flex-1 bg-primary hover:bg-blue-800 text-white py-3 rounded-xl font-bold transition shadow-md">Simpan</button>
                             <button onclick="testConnection()" id="btnTestConn" class="flex-1 bg-gray-100 hover:bg-gray-200 text-textMain py-3 rounded-xl font-bold transition">Test Koneksi</button>
                         </div>
-                        <button onclick="pullDataFromCloud(true)" class="w-full bg-blue-50 border border-blue-200 text-primary py-2.5 rounded-xl font-semibold hover:bg-blue-100 transition text-xs flex items-center justify-center">
-                            <i data-lucide="cloud-download" class="w-4 h-4 mr-2"></i> Tarik Data Terbaru dari Cloud
+                        <button onclick="pullDataFromCloud(true)" class="w-full bg-blue-50 hover:bg-blue-100 text-primary py-2.5 rounded-xl font-semibold transition text-xs flex items-center justify-center">
+                            <i data-lucide="cloud-download" class="w-4 h-4 mr-1.5"></i> Tarik Data dari Google Sheets Sekarang
                         </button>
                         <button onclick="clearApiUrl()" class="w-full bg-red-50 hover:bg-red-100 text-danger py-2.5 rounded-xl font-semibold transition text-xs">Hapus URL Backend</button>
                     </div>
@@ -637,7 +616,7 @@
 
     </main>
 
-    <!-- Mobile Bottom Navigation -->
+    <!-- Mobile Bottom Navigation (Tombol Tambah [+] di Tengah) -->
     <nav class="bottom-nav">
         <!-- 1. Dashboard -->
         <button onclick="nav('dashboard')" id="mob-dashboard" class="flex flex-col items-center justify-center py-1.5 text-textSec flex-1 transition">
@@ -653,7 +632,7 @@
 
         <!-- 3. Tombol Tambah (+) Melayang Persis di Tengah -->
         <div class="flex flex-col items-center justify-center flex-1 relative">
-            <button onclick="openModal('modalMenuAction')" class="-top-5 relative w-13 h-13 w-[52px] h-[52px] bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/40 border-4 border-white hover:scale-105 active:scale-95 transition-transform" aria-label="Tambah Transaksi">
+            <button onclick="openModal('modalMenuAction')" class="-top-5 relative w-[52px] h-[52px] bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/40 border-4 border-white hover:scale-105 active:scale-95 transition-transform" aria-label="Tambah Transaksi">
                 <i data-lucide="plus" class="w-6 h-6 stroke-[2.5]"></i>
             </button>
             <span class="text-[10px] font-medium text-textSec -mt-3.5">Tambah</span>
@@ -672,52 +651,28 @@
         </button>
     </nav>
 
-    <!-- Modal: Action Menu Mobile (+) Lengkap dengan Aksi Cepat ke Pengeluaran & Bahan Baku -->
+    <!-- Modal: Action Menu Mobile -->
     <div id="modalMenuAction" class="fixed inset-0 modal-overlay hidden z-50 flex items-end justify-center pb-20 md:items-center md:pb-0">
         <div class="bg-white rounded-t-3xl md:rounded-2xl w-full max-w-sm p-6 shadow-2xl">
-            <div class="flex justify-between items-center mb-5">
-                <div>
-                    <h3 class="font-bold text-lg text-textMain">Menu Aksi & Transaksi</h3>
-                    <p class="text-xs text-textSec">Pilih transaksi atau buka halaman menu</p>
-                </div>
-                <button onclick="closeModal('modalMenuAction')"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-3 mb-4">
-                <!-- Penjualan Baru -->
-                <button onclick="closeModal('modalMenuAction'); openModal('modalPenjualan')" class="p-3.5 border border-blue-100 bg-blue-50/50 rounded-2xl flex flex-col items-center justify-center text-center font-bold text-primary hover:bg-blue-100/50 text-xs transition">
+            <div class="flex justify-between items-center mb-6"><h3 class="font-bold text-lg">Tambah Data Baru</h3><button onclick="closeModal('modalMenuAction')"><i data-lucide="x" class="w-5 h-5"></i></button></div>
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="closeModal('modalMenuAction'); openModal('modalPenjualan')" class="p-4 border border-gray-100 bg-gray-50 rounded-2xl flex flex-col items-center justify-center text-center font-bold text-primary hover:bg-blue-50 text-xs">
                     <div class="flex items-center justify-center w-10 h-10 mb-2 bg-blue-100 text-primary rounded-full"><i data-lucide="receipt" class="w-5 h-5"></i></div>
-                    + Penjualan
+                    Penjualan
                 </button>
-                
-                <!-- Pengeluaran Langsung Menuju Menu Pengeluaran -->
-                <button onclick="aksiBukaMenu('pengeluaran', true)" class="p-3.5 border border-red-100 bg-red-50/50 rounded-2xl flex flex-col items-center justify-center text-center font-bold text-danger hover:bg-red-100/50 text-xs transition">
+                <button onclick="closeModal('modalMenuAction'); openModal('modalPengeluaran')" class="p-4 border border-gray-100 bg-gray-50 rounded-2xl flex flex-col items-center justify-center text-center font-bold text-danger hover:bg-red-50 text-xs">
                     <div class="flex items-center justify-center w-10 h-10 mb-2 bg-red-100 text-danger rounded-full"><i data-lucide="wallet" class="w-5 h-5"></i></div>
-                    Menu Pengeluaran
+                    Pengeluaran
                 </button>
-            </div>
-
-            <!-- Bahan Baku Langsung Menuju Menu Bahan Baku -->
-            <div class="space-y-2">
-                <button onclick="aksiBukaMenu('bahan', false)" class="w-full p-3.5 border border-amber-100 bg-amber-50/50 rounded-2xl flex items-center justify-between text-left font-bold text-amber-800 hover:bg-amber-100/50 text-xs transition">
-                    <div class="flex items-center space-x-3">
-                        <div class="flex items-center justify-center w-9 h-9 bg-amber-100 text-warning rounded-full"><i data-lucide="package" class="w-4 h-4"></i></div>
-                        <div>
-                            <div>Menu Bahan Baku</div>
-                            <div class="text-[10px] font-normal text-textSec">Kelola stok & pemakaian bulanan</div>
-                        </div>
-                    </div>
-                    <i data-lucide="chevron-right" class="w-4 h-4 text-textSec"></i>
-                </button>
-
-                <button onclick="closeModal('modalMenuAction'); openModal('modalPembelianBahan')" class="w-full py-2.5 px-3 bg-gray-100 hover:bg-gray-200 text-textMain rounded-xl text-xs font-semibold flex items-center justify-center transition">
-                    <i data-lucide="shopping-cart" class="w-3.5 h-3.5 mr-1.5 text-warning"></i> Catat Pembelian Bahan Baru
+                <button onclick="closeModal('modalMenuAction'); openModal('modalPembelianBahan')" class="p-4 border border-gray-100 bg-gray-50 rounded-2xl flex flex-col items-center justify-center text-center font-bold text-warning hover:bg-orange-50 text-xs col-span-2">
+                    <div class="flex items-center justify-center w-10 h-10 mb-2 bg-orange-100 text-warning rounded-full"><i data-lucide="package" class="w-5 h-5"></i></div>
+                    Pembelian Bahan
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Modal Konfirmasi Hapus -->
+    <!-- Modal: Konfirmasi Hapus Data (Tanpa alert bawaan browser) -->
     <div id="modalConfirmDelete" class="fixed inset-0 modal-overlay hidden z-[60] flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl text-center space-y-4">
             <div class="w-12 h-12 bg-red-100 text-danger rounded-full flex items-center justify-center mx-auto"><i data-lucide="alert-triangle" class="w-6 h-6"></i></div>
@@ -802,7 +757,7 @@
                         <option value="Lainnya">Lainnya</option>
                     </select>
                 </div>
-                <div><label class="block text-xs font-semibold text-textSec mb-1">Keterangan</label><input type="text" id="pgKeterangan" required class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="Beli token listrik..."></div>
+                <div><label class="block text-xs font-semibold text-textSec mb-1">Keterangan</label><input type="text" id="pgKeterangan" required class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="Beli token listrik, gas, es batu..."></div>
                 <div>
                     <label class="block text-xs font-semibold text-textSec mb-1">Nominal (Rp)</label>
                     <input type="number" id="pgNominal" required min="1" oninput="updateLiveRp('pgNominal', 'pgNominalFmt')" class="w-full border-2 border-gray-200 rounded-xl p-3 text-lg font-bold text-danger outline-none focus:border-primary" placeholder="0">
@@ -843,7 +798,7 @@
             <div class="flex justify-between items-center mb-6"><h3 class="font-bold text-xl">Catat Pembelian Bahan</h3><button onclick="closeModal('modalPembelianBahan')"><i data-lucide="x" class="w-5 h-5"></i></button></div>
             <form id="formPembelianBahan" onsubmit="submitPembelianBahan(event)" class="space-y-4">
                 <div><label class="block text-xs font-semibold text-textSec mb-1">Tanggal Beli</label><input type="date" id="pbTanggal" required class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary"></div>
-                <div><label class="block text-xs font-semibold text-textSec mb-1">Nama Bahan</label><input type="text" id="pbNama" required class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="Kopi, Sugar, Es Batu..."></div>
+                <div><label class="block text-xs font-semibold text-textSec mb-1">Nama Bahan</label><input type="text" id="pbNama" required class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="Kopi, Gula, Cup..."></div>
                 <div class="grid grid-cols-2 gap-3">
                     <div><label class="block text-xs font-semibold text-textSec mb-1">Jumlah</label><input type="number" id="pbJumlah" required min="1" oninput="calcPbTotal()" class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="0"></div>
                     <div>
@@ -862,7 +817,7 @@
         </div>
     </div>
 
-    <!-- Modal: Form Pencatatan Stok Akhir Bulan -->
+    <!-- Modal: Form Catat Stok Akhir Bulan -->
     <div id="modalCatatPemakaian" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-lg p-6 shadow-2xl max-h-[90vh] flex flex-col">
             <div class="flex justify-between items-center mb-4">
@@ -882,6 +837,7 @@
     </div>
 
     <script>
+        // Global bindings
         window.nav = nav;
         window.setConnStatus = setConnStatus;
 
@@ -952,7 +908,7 @@
                     banner.classList.remove('hidden');
                     banner.classList.add('flex');
                 }
-                if (bannerText) bannerText.innerText = `${pending.totalCount} transaksi tersimpan lokal dan siap diunggah ke Google Sheets.`;
+                if (bannerText) bannerText.innerText = `${pending.totalCount} transaksi tersimpan lokal dan siap disinkronkan ke Google Sheets.`;
             } else {
                 if (btnHeader) {
                     btnHeader.classList.add('hidden');
@@ -976,7 +932,7 @@
 
             const pending = getPendingSyncData();
             if (pending.totalCount === 0) {
-                showToast("Semua data sudah tersinkronisasi!", "success");
+                showToast("Semua data lokal sudah tersinkronisasi!", "success");
                 return;
             }
 
@@ -1047,69 +1003,50 @@
 
                 showToast(`✓ Berhasil menyinkronkan data ke Google Sheets!`, "success");
                 updatePendingSyncBadge();
-                pullDataFromCloud(false);
+                loadDashboard();
             } else {
-                showToast("Gagal sinkron. Data tersimpan lokal dengan aman.", "error");
+                showToast("Gagal sinkron. Data tetap tersimpan aman di lokal.", "error");
             }
         }
 
-        // Fungsi Penarikan Data Lengkap dari Google Sheets
-        let isPulling = false;
-        async function pullDataFromCloud(showToastMsg = true) {
+        async function pullDataFromCloud(showNotify = true) {
             const apiUrl = getApiUrl();
-            if (!apiUrl) {
-                if (showToastMsg) showToast("URL Backend belum dikonfigurasi!", "warning");
-                return;
-            }
+            if (!apiUrl) return;
 
-            if (isPulling) return;
-            isPulling = true;
+            if (showNotify) showToast("Menarik data terbaru dari Google Sheets...", "warning");
+            const res = await apiRequest('getAllData');
 
-            const btnPull = document.getElementById('btnPullDataHeader');
-            if (btnPull) {
-                btnPull.classList.add('opacity-75', 'pointer-events-none');
-                btnPull.innerHTML = '<i data-lucide="refresh-cw" class="w-3.5 h-3.5 mr-1.5 animate-spin"></i><span>Menarik...</span>';
-                lucide.createIcons();
-            }
-
-            if (showToastMsg) showToast("Mengunduh data terbaru dari Google Sheets...", "warning");
-
-            const cloudData = await apiRequest('getAllData');
-            isPulling = false;
-
-            if (btnPull) {
-                btnPull.classList.remove('opacity-75', 'pointer-events-none');
-                btnPull.innerHTML = '<i data-lucide="cloud-download" class="w-3.5 h-3.5 mr-1.5"></i><span class="hidden sm:inline">Tarik Data</span>';
-                lucide.createIcons();
-            }
-
-            if (cloudData && typeof cloudData === 'object') {
+            if (res && res.penjualan) {
+                // Merge data dari cloud ke local store tanpa menimpa data offline yang belum tersinkron
                 const mergeData = (key, cloudList) => {
-                    const localList = getLocalStore(key);
-                    const unsynced = localList.filter(item => !item._synced);
-                    const cloudFormatted = (cloudList || []).map(item => ({ ...item, _synced: true }));
-                    const unsyncedIds = new Set(unsynced.map(u => u._localId || u.ID || u.id));
-                    const filteredCloud = cloudFormatted.filter(c => !unsyncedIds.has(c.ID || c.id));
-                    return [...unsynced, ...filteredCloud];
+                    const currentLocal = getLocalStore(key);
+                    const pendingOffline = currentLocal.filter(item => !item._synced);
+                    
+                    const normalizedCloud = cloudList.map(item => {
+                        item._synced = true;
+                        return item;
+                    });
+
+                    // Gabungkan data offline lokal dengan data dari cloud
+                    const merged = [...pendingOffline, ...normalizedCloud];
+                    setLocalStore(key, merged);
                 };
 
-                setLocalStore('penjualan', mergeData('penjualan', cloudData.penjualan));
-                setLocalStore('piutang', mergeData('piutang', cloudData.piutang));
-                setLocalStore('pembayaranPiutang', mergeData('pembayaranPiutang', cloudData.pembayaranPiutang));
-                setLocalStore('pengeluaran', mergeData('pengeluaran', cloudData.pengeluaran));
-                setLocalStore('bahanBaku', mergeData('bahanBaku', cloudData.bahanBaku));
-                setLocalStore('pembelianBahan', mergeData('pembelianBahan', cloudData.pembelianBahan));
-                setLocalStore('pemakaianBahan', mergeData('pemakaianBahan', cloudData.pemakaianBahan));
+                mergeData('penjualan', res.penjualan || []);
+                mergeData('piutang', res.piutang || []);
+                mergeData('pembayaranPiutang', res.pembayaranPiutang || []);
+                mergeData('pengeluaran', res.pengeluaran || []);
+                mergeData('bahanBaku', res.bahanBaku || []);
+                mergeData('pembelianBahan', res.pembelianBahan || []);
 
-                updatePendingSyncBadge();
+                if (res.pemakaianBahan) {
+                    setLocalStore('pemakaianBahan', res.pemakaianBahan);
+                }
 
-                const activePage = document.querySelector('.page.active');
-                const pageId = activePage ? activePage.id.replace('page-', '') : 'dashboard';
-                nav(pageId);
-
-                if (showToastMsg) showToast("✓ Data berhasil ditarik dari Google Sheets!", "success");
-            } else {
-                if (showToastMsg) showToast("Gagal menarik data dari Google Sheets", "error");
+                if (showNotify) showToast("✓ Data Google Sheets berhasil ditarik ke aplikasi!", "success");
+                loadDashboard();
+            } else if (showNotify) {
+                showToast("Gagal menarik data dari Google Sheets", "error");
             }
         }
 
@@ -1174,6 +1111,7 @@
         function getApiUrl() {
             return localStorage.getItem("warkop_api_url") || "";
         }
+
         function saveApiUrl() {
             const url = document.getElementById('setApiUrl').value.trim();
             if(!url) {
@@ -1184,6 +1122,7 @@
             showToast("Konfigurasi backend berhasil disimpan!");
             testConnection();
         }
+
         function clearApiUrl() {
             localStorage.removeItem("warkop_api_url");
             document.getElementById('setApiUrl').value = "";
@@ -1212,53 +1151,28 @@
                 return null;
             }
 
-            // 1. Coba request fetch standar (CORS)
-            try {
-                let url = apiUrl;
-                let options = { redirect: 'follow' };
-
-                if (action === 'batchSync' || action.startsWith('simpan')) {
-                    options.method = 'POST';
-                    options.headers = { 'Content-Type': 'text/plain;charset=utf-8' };
-                    options.body = JSON.stringify({ action: action, data: dataObj });
-                } else {
-                    options.method = 'GET';
-                    const params = new URLSearchParams();
-                    params.append('action', action);
-                    if (dataObj) params.append('data', JSON.stringify(dataObj));
-                    url += (url.includes('?') ? '&' : '?') + params.toString();
-                }
-
-                const response = await fetch(url, options);
-                if (response.ok) {
+            if (action === 'batchSync' || action.startsWith('simpan')) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({ action: action, data: dataObj })
+                    });
                     const resJson = await response.json();
                     if (resJson && resJson.status === 'success') {
                         setConnStatus(true);
                         return resJson.data !== undefined ? resJson.data : true;
                     }
+                } catch (e) {
+                    // Fall back ke JSONP
                 }
-            } catch (err) {
-                // Fallback ke JSONP jika fetch di HP diblokir CORS / redirect
             }
 
-            // 2. Fallback ke JSONP (Paling kompatibel di Android & iOS)
             return new Promise((resolve) => {
                 const callbackName = 'jsonp_cb_' + Math.round(100000 * Math.random());
-                let timer = setTimeout(() => {
-                    cleanup();
-                    setConnStatus(false);
-                    resolve(null);
-                }, 15000);
-
-                function cleanup() {
-                    clearTimeout(timer);
-                    delete window[callbackName];
-                    const el = document.getElementById(callbackName);
-                    if (el && el.parentNode) el.parentNode.removeChild(el);
-                }
-
                 window[callbackName] = function(response) {
-                    cleanup();
+                    delete window[callbackName];
+                    if (script.parentNode) document.body.removeChild(script);
                     if (response && response.status === 'success') {
                         setConnStatus(true);
                         resolve(response.data !== undefined ? response.data : true);
@@ -1269,14 +1183,14 @@
                 };
 
                 const script = document.createElement('script');
-                script.id = callbackName;
                 let params = `action=${encodeURIComponent(action)}&callback=${callbackName}`;
                 if (dataObj) {
                     params += `&data=${encodeURIComponent(JSON.stringify(dataObj))}`;
                 }
                 script.src = `${apiUrl}${apiUrl.includes('?') ? '&' : '?'}${params}`;
                 script.onerror = function() {
-                    cleanup();
+                    delete window[callbackName];
+                    if(script.parentNode) document.body.removeChild(script);
                     setConnStatus(false);
                     resolve(null);
                 };
@@ -1327,16 +1241,6 @@
             else if(pageId === 'pengeluaran') loadPengeluaran();
             else if(pageId === 'bahan') loadBahanMaster();
             else if(pageId === 'laporan') loadLaporan();
-        }
-
-        function aksiBukaMenu(pageId, openAddModal = false) {
-            closeModal('modalMenuAction');
-            nav(pageId);
-            if(openAddModal) {
-                setTimeout(() => {
-                    if(pageId === 'pengeluaran') openModal('modalPengeluaran');
-                }, 200);
-            }
         }
 
         function openModal(id) {
@@ -1470,7 +1374,6 @@
             const pbList = getLocalStore('pembelianBahan');
 
             const now = new Date();
-            const todayStr = now.toLocaleDateString('en-CA');
             const currentMonthStr = todayStr.substring(0, 7);
 
             let penHariIni = 0;
@@ -1673,14 +1576,13 @@
             btn.innerText = "Simpan Penjualan";
             btn.disabled = false;
 
-            showToast("Penjualan berhasil disimpan!");
+            showToast("Penjualan tersimpan di lokal (Siap disinkronkan)!");
             document.getElementById('formPenjualan').reset();
             updateLiveRp('pjNominal', 'pjNominalFmt');
             toggleCamidu('Cash');
             closeModal('modalPenjualan');
             loadPenjualan();
-
-            if (getApiUrl()) triggerSyncData();
+            updatePendingSyncBadge();
         }
 
         function deletePenjualan(localId) {
@@ -1786,11 +1688,10 @@
             btn.innerText = "Proses Pembayaran";
             btn.disabled = false;
 
-            showToast("Pembayaran piutang berhasil dicatat!");
+            showToast("Pembayaran tersimpan di lokal (Siap disinkronkan)!");
             closeModal('modalBayarPiutang');
             loadPiutang();
-
-            if (getApiUrl()) triggerSyncData();
+            updatePendingSyncBadge();
         }
 
         async function loadPengeluaran() {
@@ -1840,13 +1741,12 @@
             btn.innerText = "Simpan Pengeluaran";
             btn.disabled = false;
 
-            showToast("Pengeluaran berhasil dicatat!");
+            showToast("Pengeluaran tersimpan di lokal (Siap disinkronkan)!");
             document.getElementById('formPengeluaran').reset();
             updateLiveRp('pgNominal', 'pgNominalFmt');
             closeModal('modalPengeluaran');
             loadPengeluaran();
-
-            if (getApiUrl()) triggerSyncData();
+            updatePendingSyncBadge();
         }
 
         function deletePengeluaran(localId) {
@@ -2096,11 +1996,10 @@
             btn.innerText = "Simpan Catatan Pemakaian";
             btn.disabled = false;
 
-            showToast("Stok akhir bulan berhasil dicatat!");
+            showToast("Stok akhir bulan dicatat di lokal!");
             closeModal('modalCatatPemakaian');
             loadPemakaianBahan();
-
-            if (getApiUrl()) triggerSyncData();
+            updatePendingSyncBadge();
         }
 
         async function loadBahanMaster() {
@@ -2152,13 +2051,12 @@
             btn.innerText = "Simpan Bahan Baku";
             btn.disabled = false;
 
-            showToast("Bahan baku berhasil disimpan!");
+            showToast("Bahan baku tersimpan di lokal (Siap disinkronkan)!");
             document.getElementById('formBahan').reset();
             updateLiveRp('bbHarga', 'bbHargaFmt');
             closeModal('modalBahan');
             loadBahanMaster();
-
-            if (getApiUrl()) triggerSyncData();
+            updatePendingSyncBadge();
         }
 
         function deleteBahanBaku(localId) {
@@ -2239,13 +2137,12 @@
             btn.innerText = "Simpan Pembelian";
             btn.disabled = false;
 
-            showToast("Pembelian bahan berhasil dicatat!");
+            showToast("Pembelian tersimpan di lokal (Siap disinkronkan)!");
             document.getElementById('formPembelianBahan').reset();
             updateLiveRp('pbTotal', 'pbTotalFmt');
             closeModal('modalPembelianBahan');
             loadPembelianBahan();
-
-            if (getApiUrl()) triggerSyncData();
+            updatePendingSyncBadge();
         }
 
         async function loadLaporan() {
@@ -2324,8 +2221,35 @@
             lucide.createIcons();
         }
 
+        function seedDemoDataIfEmpty() {
+            if (getLocalStore('penjualan').length === 0 && getLocalStore('pengeluaran').length === 0) {
+                const samplePenjualan = [
+                    { _localId: 'PJ-INIT-01', ID: 'PJ-INIT-01', Tanggal: todayStr, Nominal: 45000, Metode: 'Cash', 'Nama Pelanggan': '-', Status: 'Lunas', _synced: true },
+                    { _localId: 'PJ-INIT-02', ID: 'PJ-INIT-02', Tanggal: todayStr, Nominal: 60000, Metode: 'QRIS', 'Nama Pelanggan': '-', Status: 'Lunas', _synced: true },
+                    { _localId: 'PJ-INIT-03', ID: 'PJ-INIT-03', Tanggal: todayStr, Nominal: 30000, Metode: 'Camidu', 'Nama Pelanggan': 'Pak Haji Rudi', Status: 'Belum Lunas', _synced: true }
+                ];
+                const samplePiutang = [
+                    { _localId: 'PT-INIT-01', ID: 'PT-INIT-01', IDPenjualan: 'PJ-INIT-03', Tanggal: todayStr, 'Nama Pelanggan': 'Pak Haji Rudi', 'Total Hutang': 30000, 'Total Dibayar': 0, Sisa: 30000, Status: 'Belum Lunas', _synced: true }
+                ];
+                const samplePengeluaran = [
+                    { _localId: 'PG-INIT-01', ID: 'PG-INIT-01', Tanggal: todayStr, Kategori: 'Operasional', Keterangan: 'Beli Es Kristal & Gula Pasir', Nominal: 35000, _synced: true }
+                ];
+                const sampleBahan = [
+                    { _localId: 'BB-INIT-01', ID: 'BB-INIT-01', 'Nama Bahan': 'Biji Kopi Robusta', Satuan: 'Kg', 'Harga Satuan': 85000, 'Stok Awal': 10, 'Stok Akhir': 8, _synced: true },
+                    { _localId: 'BB-INIT-02', ID: 'BB-INIT-02', 'Nama Bahan': 'Susu Kental Manis', Satuan: 'Kaleng', 'Harga Satuan': 14000, 'Stok Awal': 24, 'Stok Akhir': 18, _synced: true }
+                ];
+
+                setLocalStore('penjualan', samplePenjualan);
+                setLocalStore('piutang', samplePiutang);
+                setLocalStore('pengeluaran', samplePengeluaran);
+                setLocalStore('bahanBaku', sampleBahan);
+            }
+        }
+
         window.onload = function() {
             lucide.createIcons();
+
+            seedDemoDataIfEmpty();
 
             const name = localStorage.getItem("warkop_name") || "Warkop Jaya Pesisir";
             const owner = localStorage.getItem("warkop_owner") || "";
@@ -2351,7 +2275,15 @@
             nav('dashboard');
 
             if(url) {
-                testConnection();
+                testConnection().then(() => {
+                    // Hanya otomatis melakukan sinkronisasi dan tarik data saat aplikasi pertama kali dibuka
+                    const pending = getPendingSyncData();
+                    if (pending.totalCount > 0) {
+                        triggerSyncData();
+                    } else {
+                        pullDataFromCloud(false);
+                    }
+                });
             } else {
                 setConnStatus(false);
             }
