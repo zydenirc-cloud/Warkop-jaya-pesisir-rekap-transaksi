@@ -1489,23 +1489,13 @@
                 }
             });
 
-            // Perhitungan Biaya Bahan Terpakai Bulan Ini (HPP) agar sama dengan menu Laporan
+            // Biaya bahan baku terpakai HANYA dihitung jika pengguna SUDAH mencatat stok akhir bulan ini di tab pemakaianBahan
+            const pkList = getLocalStore('pemakaianBahan');
             let totalBiayaBahanTerpakaiBulanIni = 0;
-            bbList.forEach(bb => {
-                const stokAwal = parseFloat(bb['Stok Awal']) || 0;
-                const stokAkhir = parseFloat(bb['Stok Akhir']) || 0;
-                const hargaSatuan = parseFloat(bb['Harga Satuan']) || 0;
-
-                let pembBahan = 0;
-                pbList.forEach(pb => {
-                    const tgl = String(pb.Tanggal).substring(0, 7);
-                    if (pb['Nama Bahan'] === bb['Nama Bahan'] && tgl === currentMonthStr) {
-                        pembBahan += parseFloat(pb.Jumlah) || 0;
-                    }
-                });
-
-                const terpakai = Math.max(0, stokAwal + pembBahan - stokAkhir);
-                totalBiayaBahanTerpakaiBulanIni += (terpakai * hargaSatuan);
+            pkList.forEach(pk => {
+                if (String(pk.BulanTahun || pk.bulanTahun) === currentMonthStr) {
+                    totalBiayaBahanTerpakaiBulanIni += parseFloat(pk['Biaya Terpakai'] || pk.biayaTerpakai || 0);
+                }
             });
 
             // Rumus Laba Bersih Sederhana: Omzet - Pengeluaran Operasional - Biaya Bahan Terpakai
@@ -1930,34 +1920,43 @@
                 });
 
                 const existingLog = pkList.find(l => String(l.BulanTahun) === targetPeriod && l['Nama Bahan'] === nama);
-                let stokAkhir = parseFloat(bb['Stok Akhir']) || 0;
-                if (existingLog) stokAkhir = parseFloat(existingLog['Stok Akhir']) || 0;
+                
+                // JIKA BELUM DICATAT oleh pengguna untuk bulan ini, stok akhir fisik dianggap sama dengan total stok yang tersedia
+                // sehingga Terpakai = 0 dan Biaya Terpakai = Rp 0. Tidak ada pemakaian otomatis!
+                let stokAkhir = stokAwal + totalBeli;
+                let terpakai = 0;
+                let biayaTerpakai = 0;
+                let statusKet = '<span class="text-[10px] text-gray-400 font-normal block">Belum dicatat</span>';
 
-                const terpakai = Math.max(0, stokAwal + totalBeli - stokAkhir);
-                const biayaTerpakai = terpakai * harga;
-                totalBiayaPemakaian += biayaTerpakai;
+                if (existingLog) {
+                    stokAkhir = parseFloat(existingLog['Stok Akhir'] !== undefined ? existingLog['Stok Akhir'] : (stokAwal + totalBeli));
+                    terpakai = Math.max(0, stokAwal + totalBeli - stokAkhir);
+                    biayaTerpakai = terpakai * harga;
+                    totalBiayaPemakaian += biayaTerpakai;
+                    statusKet = '<span class="text-[10px] text-emerald-600 font-medium block">Tercatat</span>';
+                }
 
                 const terpakaiFmt = `${terpakai} ${satuan}`;
                 const biayaFmt = formatRp(biayaTerpakai);
 
                 tb.innerHTML += `<tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 font-semibold text-textMain">${nama}</td>
+                    <td class="px-6 py-4 font-semibold text-textMain">${nama} ${statusKet}</td>
                     <td class="px-6 py-4">${stokAwal} ${satuan}</td>
                     <td class="px-6 py-4 text-primary font-medium">+${totalBeli} ${satuan}</td>
                     <td class="px-6 py-4 font-bold text-textMain">${stokAkhir} ${satuan}</td>
-                    <td class="px-6 py-4 font-bold text-warning">${terpakaiFmt}</td>
-                    <td class="px-6 py-4 font-bold text-danger">${biayaFmt}</td>
+                    <td class="px-6 py-4 font-bold ${terpakai > 0 ? 'text-warning' : 'text-gray-400'}">${terpakaiFmt}</td>
+                    <td class="px-6 py-4 font-bold ${biayaTerpakai > 0 ? 'text-danger' : 'text-gray-400'}">${biayaFmt}</td>
                 </tr>`;
 
                 cd.innerHTML += `<div class="p-4 bg-white rounded-xl border border-gray-100 mb-2">
                     <div class="flex justify-between items-start mb-2">
                         <div>
-                            <div class="font-bold text-textMain text-sm">${nama}</div>
+                            <div class="font-bold text-textMain text-sm">${nama} ${statusKet}</div>
                             <div class="text-xs text-textSec">Stok Awal: ${stokAwal} | Beli: +${totalBeli} | Stok Akhir: ${stokAkhir}</div>
                         </div>
                         <div class="text-right">
-                            <div class="font-bold text-danger text-sm">${biayaFmt}</div>
-                            <div class="text-[10px] text-warning font-bold">Terpakai: ${terpakaiFmt}</div>
+                            <div class="font-bold ${biayaTerpakai > 0 ? 'text-danger' : 'text-gray-400'} text-sm">${biayaFmt}</div>
+                            <div class="text-[10px] ${terpakai > 0 ? 'text-warning font-bold' : 'text-gray-400'}">Terpakai: ${terpakaiFmt}</div>
                         </div>
                     </div>
                 </div>`;
@@ -1999,11 +1998,17 @@
                 });
 
                 const existingLog = pkList.find(l => String(l.BulanTahun) === targetPeriod && l['Nama Bahan'] === nama);
-                let stokAkhir = parseFloat(bb['Stok Akhir']) || 0;
-                if (existingLog) stokAkhir = parseFloat(existingLog['Stok Akhir']) || 0;
+                
+                // Jika belum ada log sebelumnya, default stok akhir sama dengan total ketersediaan (terpakai = 0)
+                let stokAkhir = stokAwal + totalBeli;
+                let terpakai = 0;
+                let biayaTerpakai = 0;
 
-                const terpakai = Math.max(0, stokAwal + totalBeli - stokAkhir);
-                const biayaTerpakai = terpakai * harga;
+                if (existingLog) {
+                    stokAkhir = parseFloat(existingLog['Stok Akhir'] !== undefined ? existingLog['Stok Akhir'] : (stokAwal + totalBeli));
+                    terpakai = Math.max(0, stokAwal + totalBeli - stokAkhir);
+                    biayaTerpakai = terpakai * harga;
+                }
 
                 return {
                     namaBahan: nama,
@@ -2023,7 +2028,7 @@
                     <div class="p-3 bg-gray-50 rounded-2xl border border-gray-200 text-xs space-y-2">
                         <div class="flex justify-between items-center">
                             <span class="font-bold text-sm text-textMain">${item.namaBahan}</span>
-                            <span class="text-textSec text-[11px]">Formula: (${item.stokAwal} + ${item.pembelian}) - Stok Akhir</span>
+                            <span class="text-textSec text-[11px]">Total Tersedia: ${item.stokAwal + item.pembelian} ${item.satuan}</span>
                         </div>
                         <div class="grid grid-cols-2 gap-2 items-center">
                             <div>
@@ -2266,7 +2271,7 @@
             const pjList = getLocalStore('penjualan');
             const pgList = getLocalStore('pengeluaran');
             const pbList = getLocalStore('pembelianBahan');
-            const bbList = getLocalStore('bahanBaku');
+            const pkList = getLocalStore('pemakaianBahan');
 
             let cash = 0, qris = 0, camidu = 0, totalOmzet = 0;
             pjList.forEach(p => {
@@ -2296,22 +2301,16 @@
                 }
             });
 
+            // Biaya bahan terpakai HANYA dihitung dari catatan resmi pemakaianBahan dalam periode tanggal laporan
+            const startMonthStr = startInput ? startInput.substring(0, 7) : "2020-01";
+            const endMonthStr = endInput ? endInput.substring(0, 7) : "2099-12";
             let totalBiayaBahanTerpakai = 0;
-            bbList.forEach(bb => {
-                const stokAwal = parseFloat(bb['Stok Awal']) || 0;
-                const stokAkhir = parseFloat(bb['Stok Akhir']) || 0;
-                const hargaSatuan = parseFloat(bb['Harga Satuan']) || 0;
 
-                let pembBahan = 0;
-                pbList.forEach(pb => {
-                    const d = new Date(pb.Tanggal);
-                    if (pb['Nama Bahan'] === bb['Nama Bahan'] && d >= sDate && d <= eDate) {
-                        pembBahan += parseFloat(pb.Jumlah) || 0;
-                    }
-                });
-
-                const terpakai = Math.max(0, stokAwal + pembBahan - stokAkhir);
-                totalBiayaBahanTerpakai += (terpakai * hargaSatuan);
+            pkList.forEach(pk => {
+                const bt = String(pk.BulanTahun || "");
+                if (bt >= startMonthStr && bt <= endMonthStr) {
+                    totalBiayaBahanTerpakai += parseFloat(pk['Biaya Terpakai'] || pk.biayaTerpakai || 0);
+                }
             });
 
             if(document.getElementById('lapCash')) document.getElementById('lapCash').innerText = formatRp(cash);
@@ -2331,35 +2330,24 @@
             safeCreateIcons();
         }
 
-        function seedDemoDataIfEmpty() {
-            if (getLocalStore('penjualan').length === 0 && getLocalStore('pengeluaran').length === 0) {
-                const samplePenjualan = [
-                    { _localId: 'PJ-INIT-01', ID: 'PJ-INIT-01', Tanggal: todayStr, Nominal: 45000, Metode: 'Cash', 'Nama Pelanggan': '-', Status: 'Lunas', _synced: true },
-                    { _localId: 'PJ-INIT-02', ID: 'PJ-INIT-02', Tanggal: todayStr, Nominal: 60000, Metode: 'QRIS', 'Nama Pelanggan': '-', Status: 'Lunas', _synced: true },
-                    { _localId: 'PJ-INIT-03', ID: 'PJ-INIT-03', Tanggal: todayStr, Nominal: 30000, Metode: 'Camidu', 'Nama Pelanggan': 'Pak Haji Rudi', Status: 'Belum Lunas', _synced: true }
-                ];
-                const samplePiutang = [
-                    { _localId: 'PT-INIT-01', ID: 'PT-INIT-01', IDPenjualan: 'PJ-INIT-03', Tanggal: todayStr, 'Nama Pelanggan': 'Pak Haji Rudi', 'Total Hutang': 30000, 'Total Dibayar': 0, Sisa: 30000, Status: 'Belum Lunas', _synced: true }
-                ];
-                const samplePengeluaran = [
-                    { _localId: 'PG-INIT-01', ID: 'PG-INIT-01', Tanggal: todayStr, Kategori: 'Operasional', Keterangan: 'Beli Es Kristal & Gula Pasir', Nominal: 35000, _synced: true }
-                ];
-                const sampleBahan = [
-                    { _localId: 'BB-INIT-01', ID: 'BB-INIT-01', 'Nama Bahan': 'Biji Kopi Robusta', Satuan: 'Kg', 'Harga Satuan': 85000, 'Stok Awal': 10, 'Stok Akhir': 8, _synced: true },
-                    { _localId: 'BB-INIT-02', ID: 'BB-INIT-02', 'Nama Bahan': 'Susu Kental Manis', Satuan: 'Kaleng', 'Harga Satuan': 14000, 'Stok Awal': 24, 'Stok Akhir': 18, _synced: true }
-                ];
-
-                setLocalStore('penjualan', samplePenjualan);
-                setLocalStore('piutang', samplePiutang);
-                setLocalStore('pengeluaran', samplePengeluaran);
-                setLocalStore('bahanBaku', sampleBahan);
-            }
+        function cleanSampleInitData() {
+            // Bersihkan data dummy contoh awal jika masih ada di memori lokal
+            ['bahanBaku', 'penjualan', 'piutang', 'pengeluaran', 'pembelianBahan'].forEach(key => {
+                let items = getLocalStore(key);
+                let cleaned = items.filter(item => {
+                    const id = String(item._localId || item.ID || "");
+                    return !id.includes('-INIT-');
+                });
+                if (cleaned.length !== items.length) {
+                    setLocalStore(key, cleaned);
+                }
+            });
         }
 
         // Jalankan Inisialisasi Aplikasi
         document.addEventListener('DOMContentLoaded', function() {
             safeCreateIcons();
-            seedDemoDataIfEmpty();
+            cleanSampleInitData();
 
             const name = localStorage.getItem("warkop_name") || "Warkop Jaya Pesisir";
             const owner = localStorage.getItem("warkop_owner") || "";
