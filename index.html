@@ -197,7 +197,13 @@
             <!-- Card Keuangan -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 mb-8">
                 <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
-                    <div class="flex items-center justify-between mb-3"><span class="text-xs text-textSec font-medium">Penjualan Hari Ini</span><div class="p-2 bg-green-50 text-success rounded-xl"><i data-lucide="banknote" class="w-4 h-4 md:w-5 md:h-5"></i></div></div>
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <span class="text-xs text-textSec font-medium">Penjualan</span>
+                            <span class="text-[10px] text-primary font-semibold block" id="dashPenSubLabel">Hari Ini</span>
+                        </div>
+                        <div class="p-2 bg-green-50 text-success rounded-xl"><i data-lucide="banknote" class="w-4 h-4 md:w-5 md:h-5"></i></div>
+                    </div>
                     <div class="text-base md:text-2xl font-bold text-textMain" id="dashPenHariIni">Rp 0</div>
                 </div>
                 <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
@@ -1609,7 +1615,38 @@
 
             const currentMonthStr = todayStr.substring(0, 7);
 
-            let penHariIni = 0;
+            // Tentukan rentang tanggal filter untuk kartu Penjualan
+            let filterStart = todayStr;
+            let filterEnd = todayStr;
+            let subLabel = 'Hari Ini';
+
+            if (dashFilterMode === 'hari') {
+                filterStart = todayStr;
+                filterEnd = todayStr;
+                subLabel = 'Hari Ini';
+            } else if (dashFilterMode === 'minggu') {
+                const now = new Date();
+                const dayOfWeek = now.getDay();
+                const distanceToMonday = (dayOfWeek + 6) % 7;
+                const monday = new Date(now);
+                monday.setDate(now.getDate() - distanceToMonday);
+                filterStart = monday.toLocaleDateString('en-CA');
+                filterEnd = todayStr;
+                subLabel = 'Minggu Ini';
+            } else if (dashFilterMode === 'bulan') {
+                filterStart = currentMonthStr + '-01';
+                filterEnd = todayStr;
+                subLabel = 'Bulan Ini';
+            } else if (dashFilterMode === 'custom') {
+                filterStart = dashCustomStartDate || todayStr;
+                filterEnd = dashCustomEndDate || todayStr;
+                if (filterStart > filterEnd) {
+                    const temp = filterStart; filterStart = filterEnd; filterEnd = temp;
+                }
+                subLabel = `${filterStart.substring(5)} s/d ${filterEnd.substring(5)}`;
+            }
+
+            let penPeriode = 0;
             let penBulanIni = 0;
             let totalCash = 0, totalQRIS = 0, totalCamiduDibayar = 0;
             let trendMap = {};
@@ -1620,7 +1657,7 @@
                 const tgl = String(p.Tanggal).substring(0, 10);
 
                 if (p.Metode === 'Cash' || p.Metode === 'QRIS') {
-                    if (tgl === todayStr) penHariIni += nom;
+                    if (tgl >= filterStart && tgl <= filterEnd) penPeriode += nom;
                     if (tgl.substring(0, 7) === currentMonthStr) penBulanIni += nom;
 
                     if (p.Metode === 'Cash') totalCash += nom;
@@ -1636,7 +1673,7 @@
                 const tgl = String(by.Tanggal || by.tanggal).substring(0, 10);
                 const metode = by.Metode || by.metode || 'Cash';
 
-                if (tgl === todayStr) penHariIni += nom;
+                if (tgl >= filterStart && tgl <= filterEnd) penPeriode += nom;
                 if (tgl.substring(0, 7) === currentMonthStr) penBulanIni += nom;
 
                 totalCamiduDibayar += nom;
@@ -1672,7 +1709,8 @@
             // Rumus Laba Bersih Sederhana: Omzet (Realized) - Pengeluaran Operasional - Biaya Bahan Terpakai
             const labaSederhana = penBulanIni - pengBulanIni - totalBiayaBahanTerpakaiBulanIni;
 
-            if(document.getElementById('dashPenHariIni')) document.getElementById('dashPenHariIni').innerText = formatRp(penHariIni);
+            if(document.getElementById('dashPenSubLabel')) document.getElementById('dashPenSubLabel').innerText = subLabel;
+            if(document.getElementById('dashPenHariIni')) document.getElementById('dashPenHariIni').innerText = formatRp(penPeriode);
             if(document.getElementById('dashPenBulanIni')) document.getElementById('dashPenBulanIni').innerText = formatRp(penBulanIni);
             if(document.getElementById('dashPiutang')) document.getElementById('dashPiutang').innerText = formatRp(totalPiutang);
             if(document.getElementById('dashLaba')) document.getElementById('dashLaba').innerText = formatRp(labaSederhana);
