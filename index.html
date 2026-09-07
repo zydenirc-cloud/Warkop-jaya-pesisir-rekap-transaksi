@@ -167,10 +167,30 @@
                     <h2 class="text-2xl font-bold text-textMain" id="dashWelcome">Selamat datang, Owner</h2>
                     <p class="text-textSec text-sm">Berikut ringkasan keuangan <span class="font-semibold text-primary" id="dashShopName">Warkop Jaya Pesisir</span></p>
                 </div>
-                <div class="flex items-center bg-white p-1.5 rounded-xl border border-gray-200 text-xs font-medium space-x-1 shadow-sm self-start sm:self-auto">
-                    <button onclick="filterDash('hari')" id="btnFilterHari" class="px-3 py-1.5 rounded-lg bg-primary text-white transition">Hari Ini</button>
-                    <button onclick="filterDash('minggu')" id="btnFilterMinggu" class="px-3 py-1.5 rounded-lg text-textSec hover:bg-gray-100 transition">Minggu Ini</button>
-                    <button onclick="filterDash('bulan')" id="btnFilterBulan" class="px-3 py-1.5 rounded-lg text-textSec hover:bg-gray-100 transition">Bulan Ini</button>
+                <!-- Filter Tanggal Minimalis Ikon (Dashboard) -->
+                <div class="relative self-start sm:self-auto">
+                    <button onclick="toggleDashDateFilter(event)" id="btnDashDateTrigger" class="flex items-center space-x-2 bg-white hover:bg-gray-50 border border-gray-200 px-3.5 py-2 rounded-xl shadow-sm text-xs font-semibold text-textMain transition" title="Filter Periode Tanggal">
+                        <i data-lucide="calendar" class="w-4 h-4 text-primary"></i>
+                        <span id="dashFilterBadge" class="text-primary font-bold">Hari Ini</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-textSec"></i>
+                    </button>
+                    <!-- Popover Dropdown Minimalis Dashboard -->
+                    <div id="dashDateDropdown" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 p-3 z-30 space-y-2 text-xs">
+                        <div class="font-bold text-textMain px-1 text-[11px] uppercase tracking-wider text-gray-400">Pilih Periode</div>
+                        <div class="grid grid-cols-3 gap-1.5">
+                            <button onclick="setDashFilter('hari')" id="dashOpt_hari" class="py-1.5 px-2 rounded-lg bg-blue-50 text-primary font-semibold text-center hover:bg-blue-100 transition">Hari Ini</button>
+                            <button onclick="setDashFilter('minggu')" id="dashOpt_minggu" class="py-1.5 px-2 rounded-lg text-textSec hover:bg-gray-100 font-medium text-center transition">Minggu</button>
+                            <button onclick="setDashFilter('bulan')" id="dashOpt_bulan" class="py-1.5 px-2 rounded-lg text-textSec hover:bg-gray-100 font-medium text-center transition">Bulan</button>
+                        </div>
+                        <div class="border-t border-gray-100 pt-2 space-y-1.5">
+                            <div class="font-semibold text-textSec text-[10px]">Kustom Tanggal:</div>
+                            <div class="grid grid-cols-2 gap-1.5">
+                                <input type="date" id="dashCustomStart" class="border border-gray-200 rounded-lg p-1.5 text-[11px] outline-none focus:border-primary">
+                                <input type="date" id="dashCustomEnd" class="border border-gray-200 rounded-lg p-1.5 text-[11px] outline-none focus:border-primary">
+                            </div>
+                            <button onclick="applyDashCustom()" class="w-full bg-primary text-white py-1.5 rounded-lg font-bold text-[11px] hover:bg-blue-800 transition">Terapkan Kustom</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -483,13 +503,42 @@
                     <h2 class="text-2xl font-bold text-textMain">Laporan Keuangan</h2>
                     <p class="text-xs text-textSec">Rekapitulasi pendapatan, beban, dan laba kotor sederhana</p>
                 </div>
-                <div class="flex items-center space-x-2 bg-white p-2 rounded-xl border border-gray-200 shadow-sm text-xs self-start sm:self-auto">
-                    <input type="date" id="lapStartDate" class="border rounded-lg p-1.5 outline-none">
-                    <span class="text-textSec">s/d</span>
-                    <input type="date" id="lapEndDate" class="border rounded-lg p-1.5 outline-none">
-                    <button onclick="loadLaporan()" class="bg-primary text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-blue-800 transition">Filter</button>
-                    <button onclick="exportPdfLaporan()" class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center space-x-1">
-                        <i data-lucide="file-text" class="w-3.5 h-3.5 mr-1"></i> Export PDF
+                <!-- Filter Tanggal Minimalis Ikon & Export PDF -->
+                <div class="flex items-center space-x-2 self-start sm:self-auto">
+                    <!-- Minimalist Calendar Filter Trigger -->
+                    <div class="relative">
+                        <button onclick="toggleLapDateFilter(event)" id="btnLapDateTrigger" class="flex items-center space-x-2 bg-white hover:bg-gray-50 border border-gray-200 px-3.5 py-2.5 rounded-xl shadow-sm text-xs font-semibold text-textMain transition" title="Filter Periode Tanggal">
+                            <i data-lucide="calendar" class="w-4 h-4 text-primary"></i>
+                            <span id="lapFilterBadge" class="text-xs text-primary font-bold">Bulan Ini</span>
+                            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-textSec"></i>
+                        </button>
+                        <!-- Popover Dropdown Minimalis Laporan -->
+                        <div id="lapDateDropdown" class="hidden absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 z-30 space-y-3 text-xs">
+                            <div class="flex justify-between items-center pb-2 border-b border-gray-100">
+                                <span class="font-bold text-textMain">Filter Periode Laporan</span>
+                                <button onclick="setLapPreset('bulan')" class="text-[10px] text-primary hover:underline font-medium">Bulan Ini</button>
+                            </div>
+                            <div class="space-y-2">
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-textSec mb-1">Dari Tanggal</label>
+                                    <input type="date" id="lapStartDate" class="w-full border border-gray-200 rounded-xl p-2 outline-none focus:border-primary">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-textSec mb-1">Sampai Tanggal</label>
+                                    <input type="date" id="lapEndDate" class="w-full border border-gray-200 rounded-xl p-2 outline-none focus:border-primary">
+                                </div>
+                            </div>
+                            <div class="flex space-x-2 pt-1">
+                                <button onclick="setLapPreset('semua')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-textMain py-2 rounded-xl font-bold transition">Semua</button>
+                                <button onclick="applyLapFilter()" class="flex-1 bg-primary hover:bg-blue-800 text-white py-2 rounded-xl font-bold transition shadow-md">Terapkan</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Export PDF -->
+                    <button onclick="exportPdfLaporan()" class="bg-emerald-600 text-white px-3.5 py-2.5 rounded-xl font-semibold hover:bg-emerald-700 transition flex items-center space-x-1.5 text-xs shadow-sm">
+                        <i data-lucide="file-text" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">Export PDF</span>
                     </button>
                 </div>
             </div>
@@ -506,7 +555,11 @@
                     <div class="space-y-3 text-sm">
                         <div class="flex justify-between"><span class="text-textSec">Penjualan Tunai (Cash)</span><span class="font-semibold" id="lapCash">Rp 0</span></div>
                         <div class="flex justify-between"><span class="text-textSec">Penjualan Non-Tunai (QRIS)</span><span class="font-semibold" id="lapQris">Rp 0</span></div>
-                        <div class="flex justify-between"><span class="text-textSec">Penjualan Piutang (Camidu)</span><span class="font-semibold" id="lapCamidu">Rp 0</span></div>
+                        <div class="flex justify-between"><span class="text-textSec">Camidu Terbayar (Masuk Omzet)</span><span class="font-semibold text-warning" id="lapCamidu">Rp 0</span></div>
+                        <div class="flex justify-between text-xs text-textSec bg-gray-50 p-2 rounded-lg">
+                            <span>Piutang Camidu Belum Lunas (Belum Omzet)</span>
+                            <span class="font-medium text-danger" id="lapCamiduUnpaid">Rp 0</span>
+                        </div>
                         <hr class="border-gray-100">
                         <div class="flex justify-between font-bold text-base"><span class="text-textMain">Total Omzet</span><span class="text-success" id="lapTotalOmzet">Rp 0</span></div>
                     </div>
@@ -527,7 +580,7 @@
             <div class="bg-gradient-to-r from-[#0D21A1] to-[#1E3A8A] text-white p-6 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-center gap-4 card-print">
                 <div>
                     <h3 class="text-white/80 font-medium mb-1 text-sm">Laba Bersih Sederhana</h3>
-                    <p class="text-xs text-white/60">Rumus: Omzet - Beban Pengeluaran - Biaya Bahan Terpakai</p>
+                    <p class="text-xs text-white/60">Rumus: Omzet (Cash + QRIS + Camidu Terbayar) - Beban Pengeluaran - Biaya Bahan Terpakai</p>
                 </div>
                 <div class="text-3xl md:text-4xl font-bold tracking-tight" id="lapLabaBersih">Rp 0</div>
             </div>
@@ -1435,16 +1488,115 @@
             window.print();
         }
 
+        function toggleDashDateFilter(e) {
+            if (e) e.stopPropagation();
+            const dd = document.getElementById('dashDateDropdown');
+            const lapDd = document.getElementById('lapDateDropdown');
+            if (lapDd) lapDd.classList.add('hidden');
+            if (dd) dd.classList.toggle('hidden');
+            safeCreateIcons();
+        }
+
+        function toggleLapDateFilter(e) {
+            if (e) e.stopPropagation();
+            const dd = document.getElementById('lapDateDropdown');
+            const dashDd = document.getElementById('dashDateDropdown');
+            if (dashDd) dashDd.classList.add('hidden');
+            if (dd) dd.classList.toggle('hidden');
+            safeCreateIcons();
+        }
+
+        document.addEventListener('click', function(e) {
+            const dashDd = document.getElementById('dashDateDropdown');
+            const btnDash = document.getElementById('btnDashDateTrigger');
+            if (dashDd && !dashDd.contains(e.target) && btnDash && !btnDash.contains(e.target)) {
+                dashDd.classList.add('hidden');
+            }
+            const lapDd = document.getElementById('lapDateDropdown');
+            const btnLap = document.getElementById('btnLapDateTrigger');
+            if (lapDd && !lapDd.contains(e.target) && btnLap && !btnLap.contains(e.target)) {
+                lapDd.classList.add('hidden');
+            }
+        });
+
         let dashFilterMode = 'hari';
-        function filterDash(mode) {
+        let dashCustomStartDate = '';
+        let dashCustomEndDate = '';
+
+        function setDashFilter(mode) {
             dashFilterMode = mode;
-            ['Hari', 'Minggu', 'Bulan'].forEach(m => {
-                const b = document.getElementById('btnFilter' + m);
-                if(b) {
-                    b.className = m.toLowerCase() === mode ? "px-3 py-1.5 rounded-lg bg-primary text-white transition" : "px-3 py-1.5 rounded-lg text-textSec hover:bg-gray-100 transition";
+            const badge = document.getElementById('dashFilterBadge');
+            const labels = { hari: 'Hari Ini', minggu: 'Minggu Ini', bulan: 'Bulan Ini' };
+            if (badge) badge.innerText = labels[mode] || 'Hari Ini';
+
+            ['hari', 'minggu', 'bulan'].forEach(m => {
+                const opt = document.getElementById('dashOpt_' + m);
+                if (opt) {
+                    opt.className = m === mode ? "py-1.5 px-2 rounded-lg bg-blue-50 text-primary font-semibold text-center hover:bg-blue-100 transition" : "py-1.5 px-2 rounded-lg text-textSec hover:bg-gray-100 font-medium text-center transition";
                 }
             });
+
+            const dd = document.getElementById('dashDateDropdown');
+            if (dd) dd.classList.add('hidden');
             loadDashboard();
+        }
+
+        function applyDashCustom() {
+            const s = document.getElementById('dashCustomStart').value;
+            const e = document.getElementById('dashCustomEnd').value;
+            if (!s || !e) {
+                showToast("Pilih tanggal awal dan akhir!", "warning");
+                return;
+            }
+            dashFilterMode = 'custom';
+            dashCustomStartDate = s;
+            dashCustomEndDate = e;
+            const badge = document.getElementById('dashFilterBadge');
+            if (badge) badge.innerText = `${s.substring(5)} - ${e.substring(5)}`;
+
+            ['hari', 'minggu', 'bulan'].forEach(m => {
+                const opt = document.getElementById('dashOpt_' + m);
+                if (opt) opt.className = "py-1.5 px-2 rounded-lg text-textSec hover:bg-gray-100 font-medium text-center transition";
+            });
+
+            const dd = document.getElementById('dashDateDropdown');
+            if (dd) dd.classList.add('hidden');
+            loadDashboard();
+        }
+
+        function applyLapFilter() {
+            const s = document.getElementById('lapStartDate').value;
+            const e = document.getElementById('lapEndDate').value;
+            const badge = document.getElementById('lapFilterBadge');
+            if (badge) {
+                badge.innerText = (s && e) ? `${s.substring(5)} s/d ${e.substring(5)}` : "Tersaring";
+            }
+            const dd = document.getElementById('lapDateDropdown');
+            if (dd) dd.classList.add('hidden');
+            loadLaporan();
+        }
+
+        function setLapPreset(type) {
+            const now = new Date();
+            if (type === 'bulan') {
+                const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toLocaleDateString('en-CA');
+                document.getElementById('lapStartDate').value = firstDay;
+                document.getElementById('lapEndDate').value = todayStr;
+                const badge = document.getElementById('lapFilterBadge');
+                if (badge) badge.innerText = "Bulan Ini";
+            } else if (type === 'semua') {
+                document.getElementById('lapStartDate').value = "2020-01-01";
+                document.getElementById('lapEndDate').value = todayStr;
+                const badge = document.getElementById('lapFilterBadge');
+                if (badge) badge.innerText = "Semua";
+            }
+            const dd = document.getElementById('lapDateDropdown');
+            if (dd) dd.classList.add('hidden');
+            loadLaporan();
+        }
+
+        function filterDash(mode) {
+            setDashFilter(mode);
         }
 
         async function loadDashboard() {
@@ -1453,24 +1605,43 @@
             const pgList = getLocalStore('pengeluaran');
             const pbList = getLocalStore('pembelianBahan');
             const bbList = getLocalStore('bahanBaku');
+            const byList = getLocalStore('pembayaranPiutang');
 
             const currentMonthStr = todayStr.substring(0, 7);
 
             let penHariIni = 0;
             let penBulanIni = 0;
-            let totalCash = 0, totalQRIS = 0, totalCamidu = 0;
+            let totalCash = 0, totalQRIS = 0, totalCamiduDibayar = 0;
             let trendMap = {};
 
+            // Hanya penjualan Cash dan QRIS yang langsung diakui sebagai Omzet
             pjList.forEach(p => {
                 const nom = parseFloat(p.Nominal) || 0;
                 const tgl = String(p.Tanggal).substring(0, 10);
 
+                if (p.Metode === 'Cash' || p.Metode === 'QRIS') {
+                    if (tgl === todayStr) penHariIni += nom;
+                    if (tgl.substring(0, 7) === currentMonthStr) penBulanIni += nom;
+
+                    if (p.Metode === 'Cash') totalCash += nom;
+                    else if (p.Metode === 'QRIS') totalQRIS += nom;
+
+                    trendMap[tgl] = (trendMap[tgl] || 0) + nom;
+                }
+            });
+
+            // Pembayaran piutang Camidu baru diakui sebagai Omzet saat dibayarkan
+            byList.forEach(by => {
+                const nom = parseFloat(by.Nominal || by.nominal) || 0;
+                const tgl = String(by.Tanggal || by.tanggal).substring(0, 10);
+                const metode = by.Metode || by.metode || 'Cash';
+
                 if (tgl === todayStr) penHariIni += nom;
                 if (tgl.substring(0, 7) === currentMonthStr) penBulanIni += nom;
 
-                if (p.Metode === 'Cash') totalCash += nom;
-                else if (p.Metode === 'QRIS') totalQRIS += nom;
-                else if (p.Metode === 'Camidu') totalCamidu += nom;
+                totalCamiduDibayar += nom;
+                if (metode === 'QRIS') totalQRIS += nom;
+                else totalCash += nom;
 
                 trendMap[tgl] = (trendMap[tgl] || 0) + nom;
             });
@@ -1498,7 +1669,7 @@
                 }
             });
 
-            // Rumus Laba Bersih Sederhana: Omzet - Pengeluaran Operasional - Biaya Bahan Terpakai
+            // Rumus Laba Bersih Sederhana: Omzet (Realized) - Pengeluaran Operasional - Biaya Bahan Terpakai
             const labaSederhana = penBulanIni - pengBulanIni - totalBiayaBahanTerpakaiBulanIni;
 
             if(document.getElementById('dashPenHariIni')) document.getElementById('dashPenHariIni').innerText = formatRp(penHariIni);
@@ -1551,7 +1722,7 @@
                         data: {
                             labels: dates.length ? dates : ['Hari Ini'],
                             datasets: [{
-                                label: 'Penjualan',
+                                label: 'Penjualan (Omzet)',
                                 data: values.length ? values : [0],
                                 borderColor: '#0D21A1',
                                 backgroundColor: 'rgba(13, 33, 161, 0.08)',
@@ -1569,9 +1740,9 @@
                     metodeChartInstance = new Chart(metodeEl.getContext('2d'), {
                         type: 'doughnut',
                         data: {
-                            labels: ['Cash', 'QRIS', 'Camidu'],
+                            labels: ['Cash', 'QRIS', 'Camidu Terbayar'],
                             datasets: [{
-                                data: [totalCash, totalQRIS, totalCamidu],
+                                data: [totalCash, totalQRIS, totalCamiduDibayar],
                                 backgroundColor: ['#16A34A', '#0D21A1', '#F59E0B']
                             }]
                         },
@@ -2272,18 +2443,30 @@
             const pgList = getLocalStore('pengeluaran');
             const pbList = getLocalStore('pembelianBahan');
             const pkList = getLocalStore('pemakaianBahan');
+            const byList = getLocalStore('pembayaranPiutang');
 
-            let cash = 0, qris = 0, camidu = 0, totalOmzet = 0;
+            let cash = 0, qris = 0, camiduUnpaid = 0;
             pjList.forEach(p => {
                 const d = new Date(p.Tanggal);
                 if (d >= sDate && d <= eDate) {
                     const nom = parseFloat(p.Nominal) || 0;
-                    totalOmzet += nom;
                     if (p.Metode === 'Cash') cash += nom;
                     else if (p.Metode === 'QRIS') qris += nom;
-                    else if (p.Metode === 'Camidu') camidu += nom;
+                    else if (p.Metode === 'Camidu') camiduUnpaid += nom;
                 }
             });
+
+            // Pembayaran piutang Camidu yang diterima dalam periode ini dihitung ke omzet
+            let totalPembayaranPiutang = 0;
+            byList.forEach(by => {
+                const d = new Date(by.Tanggal || by.tanggal);
+                if (d >= sDate && d <= eDate) {
+                    totalPembayaranPiutang += parseFloat(by.Nominal || by.nominal) || 0;
+                }
+            });
+
+            // Total Omzet hanya mengakui Cash langsung, QRIS langsung, dan Camidu yang terbayar
+            const totalOmzet = cash + qris + totalPembayaranPiutang;
 
             let totalPengeluaran = 0;
             pgList.forEach(pg => {
@@ -2315,7 +2498,8 @@
 
             if(document.getElementById('lapCash')) document.getElementById('lapCash').innerText = formatRp(cash);
             if(document.getElementById('lapQris')) document.getElementById('lapQris').innerText = formatRp(qris);
-            if(document.getElementById('lapCamidu')) document.getElementById('lapCamidu').innerText = formatRp(camidu);
+            if(document.getElementById('lapCamidu')) document.getElementById('lapCamidu').innerText = formatRp(totalPembayaranPiutang);
+            if(document.getElementById('lapCamiduUnpaid')) document.getElementById('lapCamiduUnpaid').innerText = formatRp(camiduUnpaid);
             if(document.getElementById('lapTotalOmzet')) document.getElementById('lapTotalOmzet').innerText = formatRp(totalOmzet);
 
             if(document.getElementById('lapPengeluaran')) document.getElementById('lapPengeluaran').innerText = formatRp(totalPengeluaran);
