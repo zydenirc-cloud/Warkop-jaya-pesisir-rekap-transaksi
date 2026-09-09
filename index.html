@@ -1407,6 +1407,7 @@
                     tanggal: p.Tanggal || p.tanggal,
                     namaBahan: p['Nama Bahan'] || p.namaBahan,
                     jumlah: p.Jumlah || p.jumlah,
+                    satuan: p.Satuan || p.satuan || 'unit',
                     hargaSatuan: p['Harga Satuan'] || p.hargaSatuan,
                     total: p.Total || p.total,
                     supplier: p.Supplier || p.supplier
@@ -2218,6 +2219,7 @@
                 const tgl = String(p.Tanggal || p.tanggal).substring(0,10);
                 const stat = p.Status || p.status || 'Belum Lunas';
                 const localId = p._localId || p.ID;
+                const safePel = String(pel).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
                 totalSisa += sisa;
                 countPelanggan++;
@@ -2225,10 +2227,10 @@
                 const sCol = stat === 'Belum Lunas' ? 'bg-red-50 text-danger border border-red-200' : 'bg-orange-50 text-warning border border-orange-200';
 
                 if (tb) {
-                    tb.innerHTML += `<tr class="hover:bg-slate-50"><td class="px-6 py-4 font-bold text-slate-800">${pel}</td><td class="px-6 py-4 text-textSec">${tgl}</td><td class="px-6 py-4">${formatRp(tot)}</td><td class="px-6 py-4 text-success font-semibold">${formatRp(byr)}</td><td class="px-6 py-4 font-bold text-danger">${formatRp(sisa)}</td><td class="px-6 py-4"><span class="px-2.5 py-1 rounded-md text-xs font-bold ${sCol}">${stat}</span></td><td class="px-6 py-4 text-center"><button onclick="openBayarModal('${localId}', '${pel.replace(/'/g, "\\'")}', ${tot}, ${sisa})" class="bg-success hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-2xs transition active:scale-95">Bayar</button></td></tr>`;
+                    tb.innerHTML += `<tr class="hover:bg-slate-50"><td class="px-6 py-4 font-bold text-slate-800">${pel}</td><td class="px-6 py-4 text-textSec">${tgl}</td><td class="px-6 py-4">${formatRp(tot)}</td><td class="px-6 py-4 text-success font-semibold">${formatRp(byr)}</td><td class="px-6 py-4 font-bold text-danger">${formatRp(sisa)}</td><td class="px-6 py-4"><span class="px-2.5 py-1 rounded-md text-xs font-bold ${sCol}">${stat}</span></td><td class="px-6 py-4 text-center"><button onclick="openBayarModal('${localId}', '${safePel}', ${tot}, ${sisa})" class="bg-success hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-2xs transition active:scale-95">Bayar</button></td></tr>`;
                 }
                 if (cd) {
-                    cd.innerHTML += `<div class="p-4 bg-white rounded-xl border border-slate-100 mb-2"><div class="flex justify-between items-start mb-2"><div><div class="font-bold text-slate-800 text-sm">${pel}</div><div class="text-xs text-textSec">Tgl: ${tgl}</div></div><div class="text-right"><div class="font-bold text-danger text-sm">${formatRp(sisa)}</div><div class="text-[10px] text-textSec font-medium">Hutang: ${formatRp(tot)}</div></div></div><button onclick="openBayarModal('${localId}', '${pel.replace(/'/g, "\\'")}', ${tot}, ${sisa})" class="w-full bg-green-50 text-success border border-green-200 hover:bg-green-100 py-2 rounded-xl text-xs font-bold transition active:scale-95">Bayar Piutang</button></div>`;
+                    cd.innerHTML += `<div class="p-4 bg-white rounded-xl border border-slate-100 mb-2"><div class="flex justify-between items-start mb-2"><div><div class="font-bold text-slate-800 text-sm">${pel}</div><div class="text-xs text-textSec">Tgl: ${tgl}</div></div><div class="text-right"><div class="font-bold text-danger text-sm">${formatRp(sisa)}</div><div class="text-[10px] text-textSec font-medium">Hutang: ${formatRp(tot)}</div></div></div><button onclick="openBayarModal('${localId}', '${safePel}', ${tot}, ${sisa})" class="w-full bg-green-50 text-success border border-green-200 hover:bg-green-100 py-2 rounded-xl text-xs font-bold transition active:scale-95">Bayar Piutang</button></div>`;
                 }
             });
 
