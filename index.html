@@ -266,7 +266,7 @@
                     <div class="text-base md:text-2xl font-black text-warning" id="dashPiutang">Rp 0</div>
                 </div>
 
-                <!-- Card 4: Laba Sederhana (Identik dengan Laporan Laba Bersih) -->
+                <!-- Card 4: Laba Sederhana -->
                 <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-xs flex flex-col justify-between">
                     <div class="flex items-center justify-between mb-2">
                         <div>
@@ -814,6 +814,25 @@
                         </label>
                     </div>
                 </div>
+
+                <!-- Hapus & Reset Data (Zona Bahaya) -->
+                <div class="bg-white p-6 rounded-2xl border border-red-100 shadow-xs md:col-span-2">
+                    <div class="flex items-center space-x-2 text-danger mb-2">
+                        <i data-lucide="alert-octagon" class="w-5 h-5"></i>
+                        <h3 class="font-bold text-base md:text-lg">Hapus Data & Reset Sistem (Zona Bahaya)</h3>
+                    </div>
+                    <p class="text-xs text-textSec mb-4 leading-relaxed">
+                        Fitur ini memungkinkan Anda membersihkan data transaksi dari penyimpanan perangkat ini. Data yang sudah dihapus secara lokal tidak dapat dikembalikan kecuali Anda memiliki cadangan (file backup JSON).
+                    </p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button onclick="confirmHapusTransaksi()" class="bg-red-50 hover:bg-red-100 border border-red-200 text-danger py-3 px-4 rounded-xl font-bold text-xs transition flex items-center justify-center active:scale-95">
+                            <i data-lucide="trash-2" class="w-4 h-4 mr-2"></i> Hapus Semua Transaksi Lokal
+                        </button>
+                        <button onclick="confirmResetTotal()" class="bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-xl font-bold text-xs transition flex items-center justify-center shadow-xs active:scale-95">
+                            <i data-lucide="refresh-ccw" class="w-4 h-4 mr-2"></i> Reset Total Sistem
+                        </button>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -875,15 +894,15 @@
         </div>
     </div>
 
-    <!-- Modal Konfirmasi Hapus -->
+    <!-- Modal Konfirmasi Universal (Pengganti confirm / alert) -->
     <div id="modalConfirmDelete" class="fixed inset-0 modal-overlay hidden z-[70] flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl text-center space-y-4">
             <div class="w-12 h-12 bg-red-100 text-danger rounded-full flex items-center justify-center mx-auto"><i data-lucide="alert-triangle" class="w-6 h-6"></i></div>
             <h3 class="font-bold text-base text-slate-900" id="confirmTitle">Hapus Data?</h3>
-            <p class="text-xs text-textSec" id="confirmMsg">Apakah Anda yakin ingin menghapus data ini?</p>
+            <p class="text-xs text-textSec" id="confirmMsg">Apakah Anda yakin ingin melanjutkan tindakan ini?</p>
             <div class="flex space-x-3 pt-2">
                 <button onclick="closeModal('modalConfirmDelete')" class="flex-1 bg-slate-100 text-slate-800 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-200 active:scale-95">Batal</button>
-                <button id="btnDoDelete" class="flex-1 bg-danger text-white py-2.5 rounded-xl text-xs font-bold hover:bg-red-600 active:scale-95">Ya, Hapus</button>
+                <button id="btnDoDelete" class="flex-1 bg-danger text-white py-2.5 rounded-xl text-xs font-bold hover:bg-red-600 active:scale-95">Ya, Lanjutkan</button>
             </div>
         </div>
     </div>
@@ -971,7 +990,7 @@
         </div>
     </div>
 
-    <!-- Modal: Form Master Bahan Baku (Hanya Stok Awal) -->
+    <!-- Modal: Form Master Bahan Baku -->
     <div id="modalBahan" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-5"><h3 class="font-bold text-lg text-slate-900" id="titleModalBb">Tambah Bahan Baku</h3><button onclick="closeModal('modalBahan')"><i data-lucide="x" class="w-5 h-5"></i></button></div>
@@ -996,7 +1015,7 @@
         </div>
     </div>
 
-    <!-- Modal: Form Pembelian Bahan Baku (Dropdown Pilih Nama Bahan) -->
+    <!-- Modal: Form Pembelian Bahan Baku -->
     <div id="modalPembelianBahan" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-5"><h3 class="font-bold text-lg text-slate-900">Catat Belanja Bahan</h3><button onclick="closeModal('modalPembelianBahan')"><i data-lucide="x" class="w-5 h-5"></i></button></div>
@@ -1046,7 +1065,7 @@
     </div>
 
     <script>
-        // Global Variables
+        // Global variables & state bindings
         let trendChartInstance = null;
         let metodeChartInstance = null;
         let trendFilterMode = 'minggu'; // 'minggu' (7 Terakhir) or 'bulan' (Bulan Ini)
@@ -1071,7 +1090,6 @@
 
         const todayStr = new Date().toLocaleDateString('en-CA');
 
-        // Safe Icon Creator
         function safeCreateIcons() {
             try {
                 if (typeof lucide !== 'undefined' && lucide.createIcons) {
@@ -1082,7 +1100,6 @@
             }
         }
 
-        // Format Currency
         const formatRp = (num) => {
             const val = parseFloat(num) || 0;
             return 'Rp ' + Math.round(val).toLocaleString('id-ID');
@@ -1265,7 +1282,7 @@
                         return resJson.data !== undefined ? resJson.data : true;
                     }
                 } catch (e) {
-                    // Fall back ke JSONP
+                    // Fallback to JSONP
                 }
             }
 
@@ -1340,7 +1357,32 @@
 
                     Object.keys(storesMap).forEach(key => {
                         const localUnsynced = getLocalStore(key).filter(i => !i._synced);
-                        const cloudItems = storesMap[key].map(item => ({ ...item, _synced: true }));
+                        const cloudItems = storesMap[key].map(item => {
+                            const normalized = { ...item, _synced: true };
+                            if (key === 'piutang') {
+                                const idPt = String(item['ID Piutang'] || item.idPiutang || item.ID || item.id || '').trim();
+                                const idPj = String(item['ID Penjualan'] || item.idPenjualan || item.IDPenjualan || '').trim();
+                                normalized['ID Piutang'] = idPt;
+                                normalized['ID Penjualan'] = idPj;
+                                normalized.id = idPt || idPj;
+                                normalized.ID = idPt || idPj;
+                                normalized.idPenjualan = idPj;
+                                normalized.IDPenjualan = idPj;
+                                normalized['Nama Pelanggan'] = item['Nama Pelanggan'] || item.namaPelanggan || '-';
+                                normalized.namaPelanggan = normalized['Nama Pelanggan'];
+                                normalized['Total Hutang'] = parseNominal(item['Total Hutang'] !== undefined ? item['Total Hutang'] : item.totalHutang);
+                                normalized.totalHutang = normalized['Total Hutang'];
+                                normalized['Total Dibayar'] = parseNominal(item['Total Dibayar'] !== undefined ? item['Total Dibayar'] : item.totalDibayar);
+                                normalized.totalDibayar = normalized['Total Dibayar'];
+                                normalized['Sisa'] = parseNominal(item['Sisa'] !== undefined ? item['Sisa'] : item.sisa);
+                                normalized.sisa = normalized['Sisa'];
+                                normalized['Status'] = item['Status'] || item.status || (normalized.sisa <= 0 ? 'Lunas' : 'Belum Lunas');
+                                normalized.status = normalized['Status'];
+                                normalized['Tanggal'] = item['Tanggal'] || item.tanggal || '';
+                                normalized.tanggal = normalized['Tanggal'];
+                            }
+                            return normalized;
+                        });
                         setLocalStore(key, [...localUnsynced, ...cloudItems]);
                     });
 
@@ -1396,7 +1438,7 @@
                 })),
                 pembayaranPiutang: pending.stores.pembayaranPiutang.map(p => ({
                     _localId: p._localId,
-                    idPiutang: p.idPiutang || p.IDPiutang,
+                    idPiutang: p.idPiutang || p.IDPiutang || p['ID Piutang'] || p.ID,
                     tanggal: p.tanggal || p.Tanggal,
                     namaPelanggan: p.namaPelanggan || p['Nama Pelanggan'],
                     nominal: p.nominal || p.Nominal,
@@ -1466,15 +1508,21 @@
 
             const seen = new Map();
             list.forEach(p => {
-                const key = (p.IDPenjualan || p.idPenjualan || p.ID || p._localId || '').trim();
-                if (key) {
-                    if (!seen.has(key)) {
+                const idPt = String(p['ID Piutang'] || p.idPiutang || p.ID || p.id || p._localId || '').trim();
+                const idPj = String(p['ID Penjualan'] || p.idPenjualan || p.IDPenjualan || '').trim();
+                const pel = String(p['Nama Pelanggan'] || p.namaPelanggan || '').trim();
+                const tgl = String(p.Tanggal || p.tanggal || '').substring(0, 10).trim();
+
+                const key = idPj || idPt || (pel && tgl ? `${pel}-${tgl}` : '') || p._localId || Math.random().toString();
+                
+                if (!seen.has(key)) {
+                    seen.set(key, p);
+                } else {
+                    const exist = seen.get(key);
+                    const dibayarP = parseNominal(p['Total Dibayar'] !== undefined ? p['Total Dibayar'] : p.totalDibayar);
+                    const dibayarExist = parseNominal(exist['Total Dibayar'] !== undefined ? exist['Total Dibayar'] : exist.totalDibayar);
+                    if (dibayarP >= dibayarExist) {
                         seen.set(key, p);
-                    } else {
-                        const exist = seen.get(key);
-                        if (parseFloat(p['Total Dibayar'] || 0) > parseFloat(exist['Total Dibayar'] || 0)) {
-                            seen.set(key, p);
-                        }
                     }
                 }
             });
@@ -1503,7 +1551,6 @@
             const hrg = parseNominal(pb['Harga Satuan'] !== undefined ? pb['Harga Satuan'] : (pb.hargaSatuan !== undefined ? pb.hargaSatuan : pb.harga));
 
             if (tot > 0) {
-                // Periksa apakah total tertukar dengan jumlah * harga
                 if (jml > 0 && hrg > 0 && tot > (jml * hrg * 1.5)) {
                     return jml * hrg;
                 }
@@ -1684,6 +1731,45 @@
             reader.readAsText(file);
         }
 
+        function confirmHapusTransaksi() {
+            openConfirm(
+                "Hapus Seluruh Transaksi?",
+                "Apakah Anda yakin ingin menghapus seluruh data transaksi lokal (Penjualan, Piutang, Pengeluaran, Pembelian & Pemakaian)? Pastikan Anda sudah mengunduh file backup jika data masih diperlukan.",
+                () => {
+                    hapusSemuaTransaksiLokal();
+                }
+            );
+        }
+
+        function hapusSemuaTransaksiLokal() {
+            setLocalStore('penjualan', []);
+            setLocalStore('piutang', []);
+            setLocalStore('pembayaranPiutang', []);
+            setLocalStore('pengeluaran', []);
+            setLocalStore('pembelianBahan', []);
+            setLocalStore('pemakaianBahan', []);
+            showToast("✓ Seluruh data transaksi lokal berhasil dibersihkan!", "success");
+            loadDashboard();
+        }
+
+        function confirmResetTotal() {
+            openConfirm(
+                "Reset Total Sistem?",
+                "PERINGATAN: Tindakan ini akan menghapus SEMUA data lokal termasuk master bahan baku dan antrean sinkronisasi. Sistem akan kembali ke kondisi awal.",
+                () => {
+                    resetTotalSistem();
+                }
+            );
+        }
+
+        function resetTotalSistem() {
+            Object.keys(STORAGE_KEYS).forEach(k => {
+                setLocalStore(k, []);
+            });
+            showToast("✓ Sistem berhasil di-reset total ke pengaturan awal!", "success");
+            loadDashboard();
+        }
+
         function toggleDashFilterPopover() {
             const popover = document.getElementById('popoverDashFilter');
             if (popover) popover.classList.toggle('hidden');
@@ -1776,7 +1862,7 @@
             let penBulanIni = 0;
             let totalCash = 0, totalQRIS = 0, totalCamiduBayar = 0;
 
-            // 1. Penjualan Tunai / QRIS (Camidu tidak masuk omzet sebelum dilunasi)
+            // 1. Penjualan Tunai / QRIS (Camidu dihitung setelah dilunasi)
             pjList.forEach(p => {
                 const tgl = String(p.Tanggal || p.tanggal || '').substring(0, 10);
                 const nom = parseNominal(p.Nominal !== undefined ? p.Nominal : p.nominal);
@@ -1794,7 +1880,7 @@
                 }
             });
 
-            // 2. Pembayaran Camidu (Diakui Omzet saat uang diterima)
+            // 2. Pembayaran Camidu (Diakui Omzet saat kas diterima)
             byList.forEach(by => {
                 const tgl = String(by.Tanggal || by.tanggal || '').substring(0, 10);
                 const nom = parseNominal(by.Nominal !== undefined ? by.Nominal : by.nominal);
@@ -1938,7 +2024,6 @@
             let pengCountMap = {};
             let allDatesSet = new Set();
 
-            // Kumpulkan data penjualan
             pjList.forEach(p => {
                 if (p.Metode !== 'Camidu' && (p.Metode || p.metode) !== 'Camidu') {
                     const tgl = String(p.Tanggal || p.tanggal || '').substring(0, 10);
@@ -1951,7 +2036,6 @@
                 }
             });
 
-            // Kumpulkan pembayaran piutang (diakui sebagai omzet)
             byList.forEach(by => {
                 const tgl = String(by.Tanggal || by.tanggal || '').substring(0, 10);
                 if (tgl) {
@@ -1962,7 +2046,6 @@
                 }
             });
 
-            // Kumpulkan data pengeluaran
             pgList.forEach(pg => {
                 const tgl = String(pg.Tanggal || pg.tanggal || '').substring(0, 10);
                 if (tgl) {
@@ -2157,7 +2240,10 @@
                 const newPiutang = {
                     _localId: ptLocalId,
                     ID: ptLocalId,
+                    'ID Piutang': ptLocalId,
+                    'ID Penjualan': localId,
                     IDPenjualan: localId,
+                    idPenjualan: localId,
                     Tanggal: tanggal,
                     'Nama Pelanggan': pelanggan,
                     'Total Hutang': nominal,
@@ -2218,7 +2304,7 @@
                 const pel = p['Nama Pelanggan'] || p.namaPelanggan || '-';
                 const tgl = String(p.Tanggal || p.tanggal).substring(0,10);
                 const stat = p.Status || p.status || 'Belum Lunas';
-                const localId = p._localId || p.ID;
+                const localId = p._localId || p['ID Piutang'] || p.ID || p['ID Penjualan'] || p.id || '';
                 const safePel = String(pel).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
                 totalSisa += sisa;
@@ -2277,7 +2363,13 @@
 
             const targetId = document.getElementById('bpId').value;
             const currentPtList = getLocalStore('piutang');
-            const ptRecord = currentPtList.find(p => (p._localId === targetId || p.ID === targetId));
+            const ptRecord = currentPtList.find(p => (
+                p._localId === targetId || 
+                p.ID === targetId || 
+                p['ID Piutang'] === targetId || 
+                p['ID Penjualan'] === targetId ||
+                p.id === targetId
+            ));
 
             if (ptRecord) {
                 const oldSisa = parseNominal(ptRecord.Sisa !== undefined ? ptRecord.Sisa : ptRecord.sisa);
@@ -2295,7 +2387,7 @@
                 const byLocalId = generateLocalId('BY');
                 const byRecord = {
                     _localId: byLocalId,
-                    idPiutang: ptRecord.ID || targetId,
+                    idPiutang: ptRecord['ID Piutang'] || ptRecord.ID || ptRecord.idPiutang || ptRecord['ID Penjualan'] || targetId,
                     tanggal: document.getElementById('bpTanggal').value,
                     namaPelanggan: ptRecord['Nama Pelanggan'] || ptRecord.namaPelanggan,
                     nominal: nom,
@@ -2608,12 +2700,16 @@
             const harga = parseNominal(document.getElementById('pbHarga').value);
             const total = jumlah * harga;
 
+            const selectedOpt = select.options[select.selectedIndex];
+            const satuan = selectedOpt ? (selectedOpt.getAttribute('data-satuan') || 'unit') : 'unit';
+
             const payload = {
                 _localId: localId,
                 ID: localId,
                 Tanggal: document.getElementById('pbTanggal').value,
                 'Nama Bahan': namaBahan,
                 Jumlah: jumlah,
+                Satuan: satuan,
                 'Harga Satuan': harga,
                 Total: total,
                 Supplier: document.getElementById('pbSupplier').value || '-',
