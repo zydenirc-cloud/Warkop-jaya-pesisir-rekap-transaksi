@@ -1933,11 +1933,16 @@
             byList.forEach(by => {
                 const tgl = String(by.Tanggal || by.tanggal || '').substring(0, 10);
                 const nom = parseNominal(by.Nominal !== undefined ? by.Nominal : by.nominal);
+                const met = by.Metode || by.metode || 'Cash';
                 
                 if (tgl.substring(0, 7) === currentMonthStr) {
                     camiduBayarBulanIni += nom;
                 }
                 totalCamiduBayar += nom;
+
+                // Masukkan pembayaran camidu ke total transaksi kas sesuai metodenya
+                if (met === 'QRIS') totalQRIS += nom;
+                else totalCash += nom;
             });
 
             // Piutang tertunggak
@@ -2028,9 +2033,9 @@
                 metodeChartInstance = new Chart(metodeEl.getContext('2d'), {
                     type: 'doughnut',
                     data: {
-                        labels: ['Cash', 'QRIS', 'Camidu Terbayar'],
+                        labels: ['Cash', 'QRIS/Transfer', 'Camidu / Piutang'],
                         datasets: [{
-                            data: [totalCash, totalQRIS, totalCamiduBayar],
+                            data: [totalCash, totalQRIS, totalPiutang],
                             backgroundColor: ['#16A34A', '#0D21A1', '#F59E0B'],
                             borderWidth: 2,
                             borderColor: '#FFFFFF'
@@ -2043,7 +2048,16 @@
                             legend: { 
                                 position: 'bottom',
                                 labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } }
-                            } 
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const val = context.parsed || 0;
+                                        return ` ${label}: ${formatRp(val)}`;
+                                    }
+                                }
+                            }
                         }, 
                         cutout: '72%' 
                     }
@@ -2380,8 +2394,18 @@
 
             const history = getLocalStore('pembayaranPiutang');
             let totalBayar = 0;
-            history.forEach(h => totalBayar += parseNominal(h.Nominal !== undefined ? h.Nominal : h.nominal));
+            let totalBayarCash = 0;
+            let totalBayarQris = 0;
+            history.forEach(h => {
+                const nom = parseNominal(h.Nominal !== undefined ? h.Nominal : h.nominal);
+                const met = h.Metode || h.metode || 'Cash';
+                totalBayar += nom;
+                if (met === 'QRIS') totalBayarQris += nom;
+                else totalBayarCash += nom;
+            });
             if(document.getElementById('statTotalBayarPiutang')) document.getElementById('statTotalBayarPiutang').innerText = formatRp(totalBayar);
+            if(document.getElementById('statTotalBayarPiutangCash')) document.getElementById('statTotalBayarPiutangCash').innerText = formatRp(totalBayarCash);
+            if(document.getElementById('statTotalBayarPiutangQris')) document.getElementById('statTotalBayarPiutangQris').innerText = formatRp(totalBayarQris);
 
             if(!activePiutang.length) {
                 if (tb) tb.innerHTML = `<tr><td colspan="7" class="px-6 py-8 text-center text-success font-bold">Tidak ada piutang tertunggak!</td></tr>`;
@@ -3173,10 +3197,16 @@
 
             // Camidu Terbayar (Masuk Omzet)
             let camiduPaid = 0;
+            let camiduPaidCash = 0;
+            let camiduPaidQris = 0;
             byList.forEach(by => {
                 const tgl = String(by.Tanggal || by.tanggal || '').substring(0, 10);
                 if (tgl >= sStr && tgl <= eStr) {
-                    camiduPaid += parseNominal(by.Nominal !== undefined ? by.Nominal : by.nominal);
+                    const nom = parseNominal(by.Nominal !== undefined ? by.Nominal : by.nominal);
+                    const met = by.Metode || by.metode || 'Cash';
+                    camiduPaid += nom;
+                    if (met === 'QRIS') camiduPaidQris += nom;
+                    else camiduPaidCash += nom;
                 }
             });
 
@@ -3220,6 +3250,8 @@
             setTxt('lapValCash', formatRp(cash));
             setTxt('lapValQris', formatRp(qris));
             setTxt('lapValCamiduPaid', formatRp(camiduPaid));
+            setTxt('lapValCamiduCash', formatRp(camiduPaidCash));
+            setTxt('lapValCamiduQris', formatRp(camiduPaidQris));
             setTxt('lapValCamiduUnpaid', `( ${formatRp(camiduUnpaid)} )`);
             setTxt('lapValTotalOmzet', formatRp(totalOmzet));
 
@@ -3243,6 +3275,8 @@
             const cash = document.getElementById('lapValCash')?.innerText || 'Rp 0';
             const qris = document.getElementById('lapValQris')?.innerText || 'Rp 0';
             const camiduPaid = document.getElementById('lapValCamiduPaid')?.innerText || 'Rp 0';
+            const camiduPaidCash = document.getElementById('lapValCamiduCash')?.innerText || 'Rp 0';
+            const camiduPaidQris = document.getElementById('lapValCamiduQris')?.innerText || 'Rp 0';
             const camiduUnpaid = document.getElementById('lapValCamiduUnpaid')?.innerText || 'Rp 0';
             const totalOmzet = document.getElementById('lapValTotalOmzet')?.innerText || 'Rp 0';
 
@@ -3297,17 +3331,7 @@
                     <!-- OMZET -->
                     <tr><td colspan="3" class="sec-title-omzet">1. PENDAPATAN (OMZET)</td></tr>
                     <tr>
-                        <td class="border-cell">Penjualan Tunai (Cash)</td>
-                        <td class="border-cell text-right">${cash}</td>
-                        <td class="border-cell text-right" style="color: #666;">Penerimaan Tunai</td>
-                    </tr>
-                    <tr>
-                        <td class="border-cell">Penjualan Non-Tunai (QRIS/Transfer)</td>
-                        <td class="border-cell text-right">${qris}</td>
-                        <td class="border-cell text-right" style="color: #666;">Penerimaan QRIS</td>
-                    </tr>
-                    <tr>
-                        <td class="border-cell">Camidu Terbayar</td>
+                        <td class="border-cell">Camidu Terbayar<br><small style="color:#666;">(Cash: ${camiduPaidCash}, QRIS: ${camiduPaidQris})</small></td>
                         <td class="border-cell text-right text-bold" style="color: #16A34A;">${camiduPaid}</td>
                         <td class="border-cell text-right" style="color: #16A34A;">Masuk Omzet</td>
                     </tr>
