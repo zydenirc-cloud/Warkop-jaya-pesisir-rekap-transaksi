@@ -351,7 +351,7 @@
             <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
                 <div>
                     <h2 class="text-xl md:text-2xl font-black text-slate-900">Penjualan</h2>
-                    <p class="text-xs text-textSec">Catat penjualan tunai, non-tunai, atau Camidu</p>
+                    <p class="text-xs text-textSec">Catat penjualan tunai, non-tunai, atau Camidu (10 transaksi per halaman)</p>
                 </div>
                 <button onclick="openModal('modalPenjualan')" class="bg-primary hover:bg-blue-800 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm flex items-center justify-center transition self-start sm:self-auto active:scale-95"><i data-lucide="plus" class="w-4 h-4 mr-1.5"></i> Tambah Penjualan</button>
             </div>
@@ -436,7 +436,7 @@
             <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
                 <div>
                     <h2 class="text-xl md:text-2xl font-black text-slate-900">Pengeluaran Harian</h2>
-                    <p class="text-xs text-textSec">Catat beban operasional, listrik, air, dan belanja perlengkapan</p>
+                    <p class="text-xs text-textSec">Catat beban operasional, listrik, air, dan belanja perlengkapan (10 per halaman)</p>
                 </div>
                 <button onclick="openModal('modalPengeluaran')" class="bg-primary hover:bg-blue-800 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm flex items-center justify-center transition self-start sm:self-auto active:scale-95"><i data-lucide="plus" class="w-4 h-4 mr-1.5"></i> Catat Pengeluaran</button>
             </div>
@@ -509,7 +509,7 @@
 
             <!-- Subtab 2: Riwayat Pembelian Bahan Baku -->
             <div id="subtabBahanPembelian" class="hidden space-y-4">
-                <!-- Summary Banner: Total Biaya Pembelian Bahan Baku (Placed at Top) -->
+                <!-- Summary Banner: Total Biaya Pembelian Bahan Baku -->
                 <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/70 p-4 rounded-2xl flex justify-between items-center shadow-2xs">
                     <div>
                         <div class="text-[11px] text-amber-900 font-bold uppercase tracking-wider">Total Biaya Pembelian Bahan Baku</div>
@@ -1121,6 +1121,7 @@
             return isNaN(parsed) ? 0 : parsed;
         }
 
+        // Helper Pagination Renderer
         function renderPagination(containerId, currentPage, totalPages, totalItems, onPageChangeFnName) {
             const el = document.getElementById(containerId);
             if (!el) return;
@@ -1677,6 +1678,545 @@
             safeCreateIcons();
         }
 
+        function closeModal(id) {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('hidden');
+        }
+
+        function openConfirm(title, msg, onConfirmFn) {
+            const t = document.getElementById('confirmTitle');
+            const m = document.getElementById('confirmMsg');
+            if (t) t.innerText = title;
+            if (m) m.innerText = msg;
+            const btn = document.getElementById('btnDoDelete');
+            if (btn) {
+                btn.onclick = function() {
+                    closeModal('modalConfirmDelete');
+                    onConfirmFn();
+                };
+            }
+            openModal('modalConfirmDelete');
+        }
+
+        function toggleCamidu(val) {
+            const wrap = document.getElementById('wrapPelanggan');
+            const input = document.getElementById('pjPelanggan');
+            if (val === 'Camidu') {
+                if (wrap) wrap.classList.remove('hidden');
+                if (input) input.required = true;
+            } else {
+                if (wrap) wrap.classList.add('hidden');
+                if (input) input.required = false;
+            }
+        }
+
+        function saveIdentitas() {
+            const nameEl = document.getElementById('setShopName');
+            const ownerEl = document.getElementById('setOwner');
+            const pengelolaLblEl = document.getElementById('setLabelPengelola');
+            const ownerLblEl = document.getElementById('setLabelOwner');
+
+            const name = nameEl ? nameEl.value : "Warkop Jaya Pesisir";
+            const owner = ownerEl ? ownerEl.value : "";
+            const labelPengelola = pengelolaLblEl && pengelolaLblEl.value.trim() ? pengelolaLblEl.value.trim() : "Pengelola Warkop";
+            const labelOwner = ownerLblEl && ownerLblEl.value.trim() ? ownerLblEl.value.trim() : "Owner Warkop";
+
+            localStorage.setItem("warkop_name", name);
+            localStorage.setItem("warkop_owner", owner);
+            localStorage.setItem("warkop_label_pengelola", labelPengelola);
+            localStorage.setItem("warkop_label_owner", labelOwner);
+
+            if(document.getElementById('headerShopName')) document.getElementById('headerShopName').innerText = name;
+            if(document.getElementById('dashShopName')) document.getElementById('dashShopName').innerText = name;
+            if(document.getElementById('lapShopName')) document.getElementById('lapShopName').innerText = name.toUpperCase();
+            if(document.getElementById('dashWelcome')) document.getElementById('dashWelcome').innerText = `Selamat datang, ${owner || 'Owner'}`;
+
+            if(document.getElementById('signLabelPengelola')) document.getElementById('signLabelPengelola').innerText = labelPengelola;
+            if(document.getElementById('signLabelOwner')) document.getElementById('signLabelOwner').innerText = labelOwner;
+
+            showToast("Identitas & label tanda tangan tersimpan!");
+        }
+
+        function confirmHapusTransaksi() {
+            openConfirm("Hapus Semua Transaksi?", "Semua data transaksi lokal (penjualan, pengeluaran, pembelian, pembayaran) akan dihapus. Master bahan dan identitas tetap tersimpan. Lanjutkan?", () => {
+                setLocalStore('penjualan', []);
+                setLocalStore('piutang', []);
+                setLocalStore('pembayaranPiutang', []);
+                setLocalStore('pengeluaran', []);
+                setLocalStore('pembelianBahan', []);
+                setLocalStore('pemakaianBahan', []);
+                showToast("Seluruh transaksi lokal telah dibersihkan", "warning");
+                loadDashboard();
+            });
+        }
+
+        function confirmResetTotal() {
+            openConfirm("Reset Total Sistem?", "PERINGATAN: Semua data lokal termasuk master bahan baku dan konfigurasi akan dihapus bersih. Sistem kembali ke kondisi awal. Lanjutkan?", () => {
+                localStorage.clear();
+                showToast("Sistem berhasil di-reset total", "danger");
+                setTimeout(() => location.reload(), 1000);
+            });
+        }
+
+        function exportBackupJson() {
+            const backupObj = {
+                version: "1.0",
+                timestamp: new Date().toISOString(),
+                warkop_name: localStorage.getItem("warkop_name") || "Warkop Jaya Pesisir",
+                warkop_owner: localStorage.getItem("warkop_owner") || "",
+                warkop_label_pengelola: localStorage.getItem("warkop_label_pengelola") || "Pengelola Warkop",
+                warkop_label_owner: localStorage.getItem("warkop_label_owner") || "Owner Warkop",
+                data: {}
+            };
+
+            Object.keys(STORAGE_KEYS).forEach(key => {
+                backupObj.data[key] = getLocalStore(key);
+            });
+
+            const jsonStr = JSON.stringify(backupObj, null, 2);
+            const blob = new Blob([jsonStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `Warkop_Jaya_Pesisir_Backup_${todayStr}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast("✓ Backup data berhasil diunduh!");
+        }
+
+        function importBackupJson(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (imported && imported.data) {
+                        openConfirm("Restore Data?", "Seluruh data lokal saat ini akan diganti dengan data file backup. Lanjutkan?", () => {
+                            Object.keys(imported.data).forEach(key => {
+                                if (STORAGE_KEYS[key]) {
+                                    localStorage.setItem(STORAGE_KEYS[key], JSON.stringify(imported.data[key]));
+                                }
+                            });
+                            if (imported.warkop_name) localStorage.setItem("warkop_name", imported.warkop_name);
+                            if (imported.warkop_owner) localStorage.setItem("warkop_owner", imported.warkop_owner);
+                            if (imported.warkop_label_pengelola) localStorage.setItem("warkop_label_pengelola", imported.warkop_label_pengelola);
+                            if (imported.warkop_label_owner) localStorage.setItem("warkop_label_owner", imported.warkop_label_owner);
+
+                            showToast("✓ Restore data berhasil!", "success");
+                            updatePendingSyncBadge();
+                            loadDashboard();
+                        });
+                    } else {
+                        showToast("Format file JSON tidak valid", "error");
+                    }
+                } catch(err) {
+                    showToast("Gagal membaca file JSON", "error");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function toggleDashFilterPopover() {
+            const popover = document.getElementById('popoverDashFilter');
+            if (popover) popover.classList.toggle('hidden');
+        }
+
+        function setDashFilterPreset(mode) {
+            dashFilterMode = mode;
+            dashCustomStartDate = null;
+            dashCustomEndDate = null;
+
+            const lbl = document.getElementById('dashFilterLabel');
+            if (lbl) {
+                lbl.innerText = mode === 'hari' ? 'Hari Ini' : mode === 'minggu' ? 'Minggu Ini' : 'Bulan Ini';
+            }
+            toggleDashFilterPopover();
+            loadDashboard();
+        }
+
+        function applyDashCustDate() {
+            const s = document.getElementById('dashCustStart').value;
+            const e = document.getElementById('dashCustEnd').value;
+            if (!s || !e) {
+                showToast("Pilih tanggal awal dan akhir", "warning");
+                return;
+            }
+            dashFilterMode = 'kustom';
+            dashCustomStartDate = s;
+            dashCustomEndDate = e;
+
+            const lbl = document.getElementById('dashFilterLabel');
+            if (lbl) {
+                lbl.innerText = `${s.substring(5)} s/d ${e.substring(5)}`;
+            }
+            toggleDashFilterPopover();
+            loadDashboard();
+        }
+
+        function setTrendFilterMode(mode) {
+            trendFilterMode = mode;
+            const btnM = document.getElementById('btnTrendMinggu');
+            const btnB = document.getElementById('btnTrendBulan');
+
+            if (mode === 'minggu') {
+                if (btnM) { btnM.className = "px-3 py-1.5 rounded-lg bg-white text-primary shadow-2xs transition font-bold"; }
+                if (btnB) { btnB.className = "px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition font-semibold"; }
+            } else {
+                if (btnM) { btnM.className = "px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition font-semibold"; }
+                if (btnB) { btnB.className = "px-3 py-1.5 rounded-lg bg-white text-primary shadow-2xs transition font-bold"; }
+            }
+
+            renderCombinedTrendChart();
+        }
+
+        async function loadDashboard() {
+            const pjList = getLocalStore('penjualan');
+            const ptList = getLocalStore('piutang');
+            const pgList = getLocalStore('pengeluaran');
+            const pkList = getLocalStore('pemakaianBahan');
+            const byList = getLocalStore('pembayaranPiutang');
+
+            const now = new Date();
+            const todayStr = now.toLocaleDateString('en-CA');
+            const currentMonthStr = todayStr.substring(0, 7);
+
+            let rangeStart = todayStr;
+            let rangeEnd = todayStr;
+            let rangeLabel = 'Hari Ini';
+
+            if (dashFilterMode === 'minggu') {
+                const day = now.getDay() || 7;
+                const mon = new Date(now);
+                mon.setDate(now.getDate() - day + 1);
+                rangeStart = mon.toLocaleDateString('en-CA');
+                rangeEnd = todayStr;
+                rangeLabel = 'Minggu Ini';
+            } else if (dashFilterMode === 'bulan') {
+                rangeStart = `${currentMonthStr}-01`;
+                rangeEnd = todayStr;
+                rangeLabel = 'Bulan Ini';
+            } else if (dashFilterMode === 'kustom' && dashCustomStartDate && dashCustomEndDate) {
+                rangeStart = dashCustomStartDate;
+                rangeEnd = dashCustomEndDate;
+                rangeLabel = `${rangeStart.substring(5)} s/d ${rangeEnd.substring(5)}`;
+            }
+
+            const periodLblEl = document.getElementById('dashPenPeriodLabel');
+            if (periodLblEl) periodLblEl.innerText = rangeLabel;
+
+            let filteredPenjualan = 0;
+            let penBulanIni = 0;
+            let totalCash = 0, totalQRIS = 0, totalCamiduBayar = 0;
+
+            // 1. Penjualan Tunai / QRIS (Camidu tidak masuk omzet sebelum dilunasi)
+            pjList.forEach(p => {
+                const tgl = String(p.Tanggal || p.tanggal || '').substring(0, 10);
+                const nom = parseNominal(p.Nominal !== undefined ? p.Nominal : p.nominal);
+                const met = p.Metode || p.metode;
+
+                if (met !== 'Camidu') {
+                    if (tgl >= rangeStart && tgl <= rangeEnd) {
+                        filteredPenjualan += nom;
+                    }
+                    if (tgl.substring(0, 7) === currentMonthStr) {
+                        penBulanIni += nom;
+                    }
+                    if (met === 'Cash') totalCash += nom;
+                    else if (met === 'QRIS') totalQRIS += nom;
+                }
+            });
+
+            // 2. Pembayaran Camidu (Diakui Omzet saat uang diterima)
+            byList.forEach(by => {
+                const tgl = String(by.Tanggal || by.tanggal || '').substring(0, 10);
+                const nom = parseNominal(by.Nominal !== undefined ? by.Nominal : by.nominal);
+                
+                if (tgl >= rangeStart && tgl <= rangeEnd) {
+                    filteredPenjualan += nom;
+                }
+                if (tgl.substring(0, 7) === currentMonthStr) {
+                    penBulanIni += nom;
+                }
+                totalCamiduBayar += nom;
+            });
+
+            // Piutang tertunggak
+            let totalPiutang = 0;
+            ptList.forEach(pt => {
+                const sisa = parseNominal(pt.Sisa !== undefined ? pt.Sisa : pt.sisa);
+                if (sisa > 0) totalPiutang += sisa;
+            });
+
+            // Pengeluaran operasional bulan ini
+            let pengBulanIni = 0;
+            pgList.forEach(pg => {
+                const tgl = String(pg.Tanggal || pg.tanggal || '').substring(0, 10);
+                if (tgl.substring(0, 7) === currentMonthStr) {
+                    pengBulanIni += parseNominal(pg.Nominal !== undefined ? pg.Nominal : pg.nominal);
+                }
+            });
+
+            // Biaya bahan terpakai bulan ini (HPP resmi opname fisik)
+            let biayaBahanTerpakaiBulanIni = 0;
+            pkList.forEach(pk => {
+                const bt = String(pk.BulanTahun || pk.bulanTahun || '');
+                if (bt === currentMonthStr) {
+                    biayaBahanTerpakaiBulanIni += parseNominal(pk['Biaya Terpakai'] !== undefined ? pk['Biaya Terpakai'] : pk.biayaTerpakai);
+                }
+            });
+
+            const labaSederhana = penBulanIni - pengBulanIni - biayaBahanTerpakaiBulanIni;
+
+            if (document.getElementById('dashPenHariIni')) document.getElementById('dashPenHariIni').innerText = formatRp(filteredPenjualan);
+            if (document.getElementById('dashPenBulanIni')) document.getElementById('dashPenBulanIni').innerText = formatRp(penBulanIni);
+            if (document.getElementById('dashPiutang')) document.getElementById('dashPiutang').innerText = formatRp(totalPiutang);
+            if (document.getElementById('dashLaba')) document.getElementById('dashLaba').innerText = formatRp(labaSederhana);
+
+            // Render Recent Penjualan
+            const elPj = document.getElementById('dashRecentPenjualan');
+            if (elPj) {
+                elPj.innerHTML = '';
+                const recentPj = [...pjList].sort((a, b) => new Date(b.Tanggal || b.tanggal) - new Date(a.Tanggal || a.tanggal)).slice(0, 5);
+                if (recentPj.length) {
+                    recentPj.forEach(p => {
+                        const met = p.Metode || p.metode;
+                        const nom = parseNominal(p.Nominal !== undefined ? p.Nominal : p.nominal);
+                        const pel = p['Nama Pelanggan'] || p.namaPelanggan;
+                        elPj.innerHTML += `<div class="flex justify-between items-center text-xs p-2.5 rounded-xl bg-slate-50"><div><div class="font-bold text-slate-800">${formatRp(nom)}</div><div class="text-[11px] text-textSec">${pel && pel !== '-' ? pel : met}</div></div><span class="px-2 py-0.5 rounded text-[10px] font-bold ${met==='Cash'?'bg-green-100 text-green-700':met==='QRIS'?'bg-blue-100 text-blue-700':'bg-orange-100 text-orange-700'}">${met}</span></div>`;
+                    });
+                } else elPj.innerHTML = `<div class="text-center py-4 text-textSec text-xs">Belum ada transaksi</div>`;
+            }
+
+            // Render Recent Pengeluaran
+            const elPg = document.getElementById('dashRecentPengeluaran');
+            if (elPg) {
+                elPg.innerHTML = '';
+                const recentPg = [...pgList].sort((a, b) => new Date(b.Tanggal || b.tanggal) - new Date(a.Tanggal || a.tanggal)).slice(0, 5);
+                if (recentPg.length) {
+                    recentPg.forEach(pg => {
+                        const nom = parseNominal(pg.Nominal !== undefined ? pg.Nominal : pg.nominal);
+                        const kat = pg.Kategori || pg.kategori;
+                        const tgl = String(pg.Tanggal || pg.tanggal).substring(0,10);
+                        elPg.innerHTML += `<div class="flex justify-between items-center text-xs p-2.5 rounded-xl bg-slate-50"><div><div class="font-bold text-danger">${formatRp(nom)}</div><div class="text-[11px] text-textSec">${kat}</div></div><span class="text-[10px] font-medium text-slate-400">${tgl}</span></div>`;
+                    });
+                } else elPg.innerHTML = `<div class="text-center py-4 text-textSec text-xs">Belum ada pengeluaran</div>`;
+            }
+
+            // Render Top Piutang
+            const elPt = document.getElementById('dashTopPiutang');
+            if (elPt) {
+                elPt.innerHTML = '';
+                const activePt = ptList.filter(pt => parseNominal(pt.Sisa !== undefined ? pt.Sisa : pt.sisa) > 0)
+                                       .sort((a, b) => parseNominal(b.Sisa || b.sisa) - parseNominal(a.Sisa || a.sisa))
+                                       .slice(0, 5);
+                if (activePt.length) {
+                    activePt.forEach(pt => {
+                        const pel = pt['Nama Pelanggan'] || pt.namaPelanggan;
+                        const tot = parseNominal(pt['Total Hutang'] !== undefined ? pt['Total Hutang'] : pt.totalHutang);
+                        const sisa = parseNominal(pt.Sisa !== undefined ? pt.Sisa : pt.sisa);
+                        elPt.innerHTML += `<div class="flex justify-between items-center text-xs p-2.5 rounded-xl bg-orange-50/50 border border-orange-100"><div><div class="font-bold text-slate-800">${pel}</div><div class="text-[11px] text-textSec">Total: ${formatRp(tot)}</div></div><div class="font-bold text-danger">${formatRp(sisa)}</div></div>`;
+                    });
+                } else elPt.innerHTML = `<div class="text-center py-4 text-textSec text-xs">Tidak ada piutang tertunggak</div>`;
+            }
+
+            // Render Doughnut Chart
+            const metodeEl = document.getElementById('metodeChart');
+            if (metodeEl && typeof Chart !== 'undefined') {
+                if (metodeChartInstance) metodeChartInstance.destroy();
+                metodeChartInstance = new Chart(metodeEl.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Cash', 'QRIS', 'Camidu Terbayar'],
+                        datasets: [{
+                            data: [totalCash, totalQRIS, totalCamiduBayar],
+                            backgroundColor: ['#16A34A', '#0D21A1', '#F59E0B'],
+                            borderWidth: 2,
+                            borderColor: '#FFFFFF'
+                        }]
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        plugins: { 
+                            legend: { 
+                                position: 'bottom',
+                                labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } }
+                            } 
+                        }, 
+                        cutout: '72%' 
+                    }
+                });
+            }
+
+            renderCombinedTrendChart();
+            updatePendingSyncBadge();
+            safeCreateIcons();
+        }
+
+        function renderCombinedTrendChart() {
+            const trendEl = document.getElementById('trendChart');
+            if (!trendEl || typeof Chart === 'undefined') return;
+
+            const pjList = getLocalStore('penjualan');
+            const pgList = getLocalStore('pengeluaran');
+            const byList = getLocalStore('pembayaranPiutang');
+
+            const now = new Date();
+            const currentMonthStr = now.toLocaleDateString('en-CA').substring(0, 7);
+
+            let penTrendMap = {};
+            let pengTrendMap = {};
+            let penCountMap = {};
+            let pengCountMap = {};
+            let allDatesSet = new Set();
+
+            pjList.forEach(p => {
+                if (p.Metode !== 'Camidu' && (p.Metode || p.metode) !== 'Camidu') {
+                    const tgl = String(p.Tanggal || p.tanggal || '').substring(0, 10);
+                    if (tgl) {
+                        const nom = parseNominal(p.Nominal !== undefined ? p.Nominal : p.nominal);
+                        penTrendMap[tgl] = (penTrendMap[tgl] || 0) + nom;
+                        penCountMap[tgl] = (penCountMap[tgl] || 0) + 1;
+                        allDatesSet.add(tgl);
+                    }
+                }
+            });
+
+            byList.forEach(by => {
+                const tgl = String(by.Tanggal || by.tanggal || '').substring(0, 10);
+                if (tgl) {
+                    const nom = parseNominal(by.Nominal !== undefined ? by.Nominal : by.nominal);
+                    penTrendMap[tgl] = (penTrendMap[tgl] || 0) + nom;
+                    penCountMap[tgl] = (penCountMap[tgl] || 0) + 1;
+                    allDatesSet.add(tgl);
+                }
+            });
+
+            pgList.forEach(pg => {
+                const tgl = String(pg.Tanggal || pg.tanggal || '').substring(0, 10);
+                if (tgl) {
+                    const nom = parseNominal(pg.Nominal !== undefined ? pg.Nominal : pg.nominal);
+                    pengTrendMap[tgl] = (pengTrendMap[tgl] || 0) + nom;
+                    pengCountMap[tgl] = (pengCountMap[tgl] || 0) + 1;
+                    allDatesSet.add(tgl);
+                }
+            });
+
+            let finalDates = [];
+            const sortedAllDates = Array.from(allDatesSet).sort();
+
+            if (trendFilterMode === 'minggu') {
+                finalDates = sortedAllDates.slice(-7);
+                if (finalDates.length === 0) finalDates = [todayStr];
+            } else {
+                finalDates = sortedAllDates.filter(d => d.startsWith(currentMonthStr));
+                if (finalDates.length === 0) finalDates = [todayStr];
+            }
+
+            const penData = finalDates.map(d => penTrendMap[d] || 0);
+            const pengData = finalDates.map(d => pengTrendMap[d] || 0);
+
+            const displayLabels = finalDates.map(d => {
+                const parts = d.split('-');
+                return parts.length === 3 ? `${parts[2]}/${parts[1]}` : d;
+            });
+
+            if (trendChartInstance) trendChartInstance.destroy();
+
+            trendChartInstance = new Chart(trendEl.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: displayLabels,
+                    datasets: [
+                        {
+                            label: 'Penjualan',
+                            data: penData,
+                            borderColor: '#0D21A1',
+                            backgroundColor: 'rgba(13, 33, 161, 0.08)',
+                            fill: true,
+                            tension: 0.35,
+                            borderWidth: 2.5,
+                            pointBackgroundColor: '#0D21A1',
+                            pointRadius: 3,
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: 'Pengeluaran',
+                            data: pengData,
+                            borderColor: '#EF4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.05)',
+                            fill: true,
+                            tension: 0.35,
+                            borderWidth: 2.5,
+                            pointBackgroundColor: '#EF4444',
+                            pointRadius: 3,
+                            pointHoverRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#0F172A',
+                            titleFont: { size: 12, weight: 'bold' },
+                            bodyFont: { size: 11 },
+                            padding: 10,
+                            cornerRadius: 10,
+                            callbacks: {
+                                title: function(context) {
+                                    const idx = context[0].dataIndex;
+                                    const dateKey = finalDates[idx] || '';
+                                    return `Tanggal: ${dateKey}`;
+                                },
+                                label: function(context) {
+                                    const idx = context.dataIndex;
+                                    const dateKey = finalDates[idx];
+                                    const isPen = context.datasetIndex === 0;
+                                    const val = context.parsed.y || 0;
+                                    const count = isPen ? (penCountMap[dateKey] || 0) : (pengCountMap[dateKey] || 0);
+                                    return ` ${context.dataset.label}: ${formatRp(val)} (${count} tx)`;
+                                },
+                                afterBody: function(context) {
+                                    const idx = context[0].dataIndex;
+                                    const penVal = penData[idx] || 0;
+                                    const pengVal = pengData[idx] || 0;
+                                    const margin = penVal - pengVal;
+                                    return `-------------------\n Selisih Bersih: ${formatRp(margin)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { size: 10, weight: '600' }, color: '#64748B' }
+                        },
+                        y: {
+                            grid: { color: '#F1F5F9' },
+                            ticks: {
+                                font: { size: 10 },
+                                color: '#64748B',
+                                callback: function(val) {
+                                    if (val >= 1000000) return (val / 1000000) + 'jt';
+                                    if (val >= 1000) return (val / 1000) + 'rb';
+                                    return val;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
         function changePjPage(page) {
             pjCurrentPage = page;
             loadPenjualan(page);
@@ -1859,6 +2399,77 @@
                 if (cd) cd.innerHTML = `<div class="p-6 text-center text-success font-bold text-sm">Tidak ada piutang tertunggak!</div>`;
             }
             safeCreateIcons();
+        }
+
+        function openBayarModal(id, nama, total, sisa) {
+            document.getElementById('bpId').value = id;
+            document.getElementById('bpNama').innerText = nama;
+            document.getElementById('bpTotalHutang').innerText = formatRp(total);
+            document.getElementById('bpSisa').innerText = formatRp(sisa);
+            document.getElementById('bpNominal').value = sisa;
+            updateLiveRp('bpNominal', 'bpNominalFmt');
+            document.getElementById('bpTanggal').value = todayStr;
+            maxSisaHutang = sisa;
+            openModal('modalBayarPiutang');
+        }
+
+        async function submitBayarPiutang(e) {
+            e.preventDefault();
+            const nom = parseNominal(document.getElementById('bpNominal').value);
+            if (nom > maxSisaHutang) {
+                showToast(`Nominal pembayaran melebihi sisa hutang (${formatRp(maxSisaHutang)})`, "error");
+                return;
+            }
+
+            const btn = document.getElementById('btnSubmitBp');
+            if (btn) {
+                btn.innerText = "Memproses...";
+                btn.disabled = true;
+            }
+
+            const targetId = document.getElementById('bpId').value;
+            const currentPtList = getLocalStore('piutang');
+            const ptRecord = currentPtList.find(p => (p._localId === targetId || p.ID === targetId || p['ID Piutang'] === targetId || p['ID Penjualan'] === targetId));
+
+            if (ptRecord) {
+                const oldSisa = parseNominal(ptRecord.Sisa !== undefined ? ptRecord.Sisa : ptRecord.sisa);
+                const oldDibayar = parseNominal(ptRecord['Total Dibayar'] !== undefined ? ptRecord['Total Dibayar'] : ptRecord.totalDibayar);
+
+                const sisaBaru = Math.max(0, oldSisa - nom);
+                const dibayarBaru = oldDibayar + nom;
+
+                ptRecord.Sisa = sisaBaru;
+                ptRecord.sisa = sisaBaru;
+                ptRecord['Total Dibayar'] = dibayarBaru;
+                ptRecord.totalDibayar = dibayarBaru;
+                ptRecord.Status = sisaBaru <= 0 ? 'Lunas' : 'Sebagian';
+                ptRecord.status = ptRecord.Status;
+                ptRecord._synced = false;
+                setLocalStore('piutang', currentPtList);
+
+                const byLocalId = generateLocalId('BY');
+                const byRecord = {
+                    _localId: byLocalId,
+                    idPiutang: ptRecord.ID || ptRecord['ID Piutang'] || targetId,
+                    tanggal: document.getElementById('bpTanggal').value,
+                    namaPelanggan: ptRecord['Nama Pelanggan'] || ptRecord.namaPelanggan,
+                    nominal: nom,
+                    metode: document.getElementById('bpMetode').value,
+                    _synced: false
+                };
+                const currentBy = getLocalStore('pembayaranPiutang');
+                currentBy.unshift(byRecord);
+                setLocalStore('pembayaranPiutang', currentBy);
+            }
+
+            if (btn) {
+                btn.innerText = "Proses Pembayaran";
+                btn.disabled = false;
+            }
+
+            showToast("Pembayaran piutang berhasil dicatat (Masuk Omzet)!");
+            closeModal('modalBayarPiutang');
+            loadPiutang();
         }
 
         function changePgPage(page) {
@@ -2521,7 +3132,7 @@
             const pkList = getLocalStore('pemakaianBahan');
             const byList = getLocalStore('pembayaranPiutang');
 
-            // 1. Perhitungan Pendapatan (Omzet) & Piutang Belum Lunas
+            // 1. Perhitungan Pendapatan (Omzet) & Piutang Belum Lunas Akurat
             let cash = 0, qris = 0, camiduUnpaid = 0;
             const accountedPtIds = new Set();
 
@@ -2536,7 +3147,7 @@
                         const pjId = String(p._localId || p.ID || p.id || '').trim();
                         const pel = String(p['Nama Pelanggan'] || p.namaPelanggan || '').trim().toLowerCase();
 
-                        // Cari record piutang yang bersesuaian di ptList untuk mengambil sisa riil hutang
+                        // Hubungkan ke data ptList untuk mengambil Sisa hutang riil
                         const matchedPt = ptList.find(pt => {
                             const idPj = String(pt['ID Penjualan'] || pt.idPenjualan || pt.IDPenjualan || '').trim();
                             const idPt = String(pt['ID Piutang'] || pt.idPiutang || pt.ID || pt._localId || '').trim();
@@ -2548,7 +3159,7 @@
                         });
 
                         if (matchedPt) {
-                            accountedPtIds.add(matchedPt._localId || matchedPt.ID || matchedPt['ID Piutang']);
+                            accountedPtIds.add(matchedPt._localId || matchedPt.ID || matchedPt['ID Piutang'] || pjId);
                             camiduUnpaid += parseNominal(matchedPt.Sisa !== undefined ? matchedPt.Sisa : matchedPt.sisa);
                         } else {
                             const stat = String(p.Status || p.status || '').toLowerCase();
@@ -2560,9 +3171,9 @@
                 }
             });
 
-            // Pastikan piutang dalam rentang tanggal yang tercatat di ptList (misal data hasil import) tetap terhitung sisa riilnya
+            // Akumulasikan sisa piutang lain dalam rentang periode yang belum tercakup
             ptList.forEach(pt => {
-                const id = pt._localId || pt.ID || pt['ID Piutang'];
+                const id = pt._localId || pt.ID || pt['ID Piutang'] || pt['ID Penjualan'] || pt.idPenjualan;
                 if (!accountedPtIds.has(id)) {
                     const tgl = String(pt.Tanggal || pt.tanggal || '').substring(0, 10);
                     if (tgl >= sStr && tgl <= eStr) {
