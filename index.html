@@ -46,6 +46,31 @@
             color: #0F172A; 
             -webkit-tap-highlight-color: transparent;
         }
+        /* ================= ATURAN KUNCI TATA LETAK ANTI-PERGESERAN (ZOOM-STABLE) ================= */
+        html, body {
+            min-width: 320px;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        * {
+            font-variant-numeric: tabular-nums;
+            box-sizing: border-box;
+        }
+        /* Kunci kestabilan angka dan nominal agar tidak geser */
+        .metric-val, [id^="dashPen"], [id^="dashPiutang"], [id^="dashLaba"], [id^="lapVal"], [id^="statTotal"] {
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum";
+            white-space: nowrap;
+        }
+        /* Kunci pembagian kolom tabel agar tidak saling mendesak saat zoom */
+        table {
+            table-layout: auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            white-space: nowrap;
+        }
         .page { display: none; animation: fadeIn 0.22s ease-in-out; }
         .page.active { display: block; }
         @keyframes fadeIn { 
@@ -237,45 +262,45 @@
             <!-- Summary Metric Cards -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 mb-8">
                 <!-- Card 1: Penjualan Dinamis -->
-                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-xs flex flex-col justify-between">
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-xs flex flex-col justify-between min-w-0">
                     <div class="flex items-center justify-between mb-2">
-                        <div>
-                            <span class="text-xs text-textSec font-medium block">Penjualan</span>
-                            <span class="text-[10px] text-primary font-bold block" id="dashPenPeriodLabel">Hari Ini</span>
+                        <div class="min-w-0">
+                            <span class="text-xs text-textSec font-medium block truncate">Penjualan</span>
+                            <span class="text-[10px] text-primary font-bold block truncate" id="dashPenPeriodLabel">Hari Ini</span>
                         </div>
-                        <div class="p-2 bg-green-50 text-success rounded-xl"><i data-lucide="banknote" class="w-4 h-4 md:w-5 md:h-5"></i></div>
+                        <div class="p-2 bg-green-50 text-success rounded-xl shrink-0"><i data-lucide="banknote" class="w-4 h-4 md:w-5 md:h-5"></i></div>
                     </div>
-                    <div class="text-base md:text-2xl font-black text-slate-900" id="dashPenHariIni">Rp 0</div>
+                    <div class="text-base md:text-2xl font-black text-slate-900 whitespace-nowrap truncate" id="dashPenHariIni">Rp 0</div>
                 </div>
 
                 <!-- Card 2: Penjualan Bulan Ini -->
-                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-xs flex flex-col justify-between">
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-xs flex flex-col justify-between min-w-0">
                     <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs text-textSec font-medium">Penjualan Bulan Ini</span>
-                        <div class="p-2 bg-blue-50 text-primary rounded-xl"><i data-lucide="receipt" class="w-4 h-4 md:w-5 md:h-5"></i></div>
+                        <span class="text-xs text-textSec font-medium truncate">Penjualan Bulan Ini</span>
+                        <div class="p-2 bg-blue-50 text-primary rounded-xl shrink-0"><i data-lucide="receipt" class="w-4 h-4 md:w-5 md:h-5"></i></div>
                     </div>
-                    <div class="text-base md:text-2xl font-black text-slate-900" id="dashPenBulanIni">Rp 0</div>
+                    <div class="text-base md:text-2xl font-black text-slate-900 whitespace-nowrap truncate" id="dashPenBulanIni">Rp 0</div>
                 </div>
 
                 <!-- Card 3: Piutang Belum Lunas -->
-                <div class="bg-white p-4 rounded-2xl border border-orange-100 shadow-xs flex flex-col justify-between">
+                <div class="bg-white p-4 rounded-2xl border border-orange-100 shadow-xs flex flex-col justify-between min-w-0">
                     <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs text-textSec font-medium">Piutang Belum Lunas</span>
-                        <div class="p-2 bg-orange-50 text-warning rounded-xl"><i data-lucide="users" class="w-4 h-4 md:w-5 md:h-5"></i></div>
+                        <span class="text-xs text-textSec font-medium truncate">Piutang Belum Lunas</span>
+                        <div class="p-2 bg-orange-50 text-warning rounded-xl shrink-0"><i data-lucide="users" class="w-4 h-4 md:w-5 md:h-5"></i></div>
                     </div>
-                    <div class="text-base md:text-2xl font-black text-warning" id="dashPiutang">Rp 0</div>
+                    <div class="text-base md:text-2xl font-black text-warning whitespace-nowrap truncate" id="dashPiutang">Rp 0</div>
                 </div>
 
                 <!-- Card 4: Laba Sederhana -->
-                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-xs flex flex-col justify-between">
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-xs flex flex-col justify-between min-w-0">
                     <div class="flex items-center justify-between mb-2">
-                        <div>
-                            <span class="text-xs text-textSec font-medium block">Laba Sederhana</span>
-                            <span class="text-[10px] text-textSec block">Bulan Berjalan</span>
+                        <div class="min-w-0">
+                            <span class="text-xs text-textSec font-medium block truncate">Laba Sederhana</span>
+                            <span class="text-[10px] text-textSec block truncate">Bulan Berjalan</span>
                         </div>
-                        <div class="p-2 bg-primary/10 text-primary rounded-xl"><i data-lucide="trending-up" class="w-4 h-4 md:w-5 md:h-5"></i></div>
+                        <div class="p-2 bg-primary/10 text-primary rounded-xl shrink-0"><i data-lucide="trending-up" class="w-4 h-4 md:w-5 md:h-5"></i></div>
                     </div>
-                    <div class="text-base md:text-2xl font-black text-primary" id="dashLaba">Rp 0</div>
+                    <div class="text-base md:text-2xl font-black text-primary whitespace-nowrap truncate" id="dashLaba">Rp 0</div>
                 </div>
             </div>
 
@@ -660,39 +685,39 @@
                     <div>
                         <h3 class="text-xs font-black tracking-wider text-[#0B1B6D] uppercase mb-2">PENDAPATAN (OMZET)</h3>
                         <div class="divide-y divide-slate-100 text-sm">
-                            <div class="py-2.5 flex justify-between items-center">
+                            <div class="py-2.5 flex justify-between items-center gap-3">
                                 <span class="text-slate-600">Penjualan Tunai (Cash)</span>
-                                <span class="font-bold text-slate-900" id="lapValCash">Rp 0</span>
+                                <span class="font-bold text-slate-900 shrink-0 whitespace-nowrap" id="lapValCash">Rp 0</span>
                             </div>
-                            <div class="py-2.5 flex justify-between items-center">
+                            <div class="py-2.5 flex justify-between items-center gap-3">
                                 <span class="text-slate-600">Penjualan Non-Tunai (QRIS/Transfer)</span>
-                                <span class="font-bold text-slate-900" id="lapValQris">Rp 0</span>
+                                <span class="font-bold text-slate-900 shrink-0 whitespace-nowrap" id="lapValQris">Rp 0</span>
                             </div>
-                            <div class="py-2.5 flex justify-between items-center">
+                            <div class="py-2.5 flex justify-between items-center gap-3">
                                 <div>
                                     <div class="flex items-center gap-2">
                                         <span class="text-slate-600">Camidu Terbayar</span>
-                                        <span class="text-[10px] font-bold bg-green-50 text-green-700 px-1.5 py-0.5 rounded border border-green-200">Masuk Omzet</span>
+                                        <span class="text-[10px] font-bold bg-green-50 text-green-700 px-1.5 py-0.5 rounded border border-green-200 shrink-0">Masuk Omzet</span>
                                     </div>
-                                    <div class="text-[10px] text-slate-500 font-medium mt-0.5">
+                                    <div class="text-[10px] text-slate-500 font-medium mt-0.5 whitespace-nowrap">
                                         Cash: <span class="font-bold text-slate-700" id="lapValCamiduCash">Rp 0</span> • QRIS: <span class="font-bold text-primary" id="lapValCamiduQris">Rp 0</span>
                                     </div>
                                 </div>
-                                <span class="font-bold text-emerald-600" id="lapValCamiduPaid">Rp 0</span>
+                                <span class="font-bold text-emerald-600 shrink-0 whitespace-nowrap" id="lapValCamiduPaid">Rp 0</span>
                             </div>
-                            <div class="py-2.5 flex justify-between items-center bg-amber-50/40 px-2.5 rounded-lg my-1">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-xs italic text-amber-900">Piutang Camidu Belum Lunas</span>
-                                    <span class="text-[9px] font-bold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">Belum Omzet</span>
+                            <div class="py-2.5 flex justify-between items-center gap-3 bg-amber-50/40 px-2.5 rounded-lg my-1">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <span class="text-xs italic text-amber-900 truncate">Piutang Camidu Belum Lunas</span>
+                                    <span class="text-[9px] font-bold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded shrink-0">Belum Omzet</span>
                                 </div>
-                                <span class="text-xs italic font-semibold text-amber-700" id="lapValCamiduUnpaid">Rp 0</span>
+                                <span class="text-xs italic font-semibold text-amber-700 shrink-0 whitespace-nowrap" id="lapValCamiduUnpaid">Rp 0</span>
                             </div>
                             
                             <!-- Subtotal Omzet -->
                             <div class="pt-3 pb-1 border-t border-slate-200">
-                                <div class="flex justify-between items-baseline">
+                                <div class="flex justify-between items-baseline gap-3">
                                     <span class="font-extrabold text-[#0B1B6D] text-base">TOTAL OMZET</span>
-                                    <span class="font-black text-[#0B1B6D] text-lg sm:text-xl" id="lapValTotalOmzet">Rp 0</span>
+                                    <span class="font-black text-[#0B1B6D] text-lg sm:text-xl shrink-0 whitespace-nowrap" id="lapValTotalOmzet">Rp 0</span>
                                 </div>
                                 <p class="text-[11px] text-slate-400 mt-1 italic">*Rumus: Cash + Non-Tunai + Camidu Terbayar. Piutang belum lunas tidak masuk omzet.</p>
                             </div>
@@ -703,27 +728,27 @@
                     <div class="pt-2">
                         <h3 class="text-xs font-black tracking-wider text-[#BE123C] uppercase mb-2">PENGELUARAN & BEBAN</h3>
                         <div class="divide-y divide-slate-100 text-sm">
-                            <div class="py-2.5 flex justify-between items-center">
+                            <div class="py-2.5 flex justify-between items-center gap-3">
                                 <span class="text-slate-600">Beban Pengeluaran Operasional</span>
-                                <span class="font-bold text-rose-600" id="lapValPengeluaran">Rp 0</span>
+                                <span class="font-bold text-rose-600 shrink-0 whitespace-nowrap" id="lapValPengeluaran">Rp 0</span>
                             </div>
-                            <div class="py-2.5 flex justify-between items-center bg-slate-50/80 px-2.5 rounded-lg my-1">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="text-xs text-slate-500">Pembelian Bahan Baku</span>
-                                    <span class="text-[10px] text-amber-700 font-semibold">(Informasi Persediaan)</span>
+                            <div class="py-2.5 flex justify-between items-center gap-3 bg-slate-50/80 px-2.5 rounded-lg my-1">
+                                <div class="flex items-center gap-1.5 min-w-0">
+                                    <span class="text-xs text-slate-500 truncate">Pembelian Bahan Baku</span>
+                                    <span class="text-[10px] text-amber-700 font-semibold shrink-0">(Informasi Persediaan)</span>
                                 </div>
-                                <span class="text-xs font-bold text-amber-600" id="lapValPembelianBahan">Rp 0</span>
+                                <span class="text-xs font-bold text-amber-600 shrink-0 whitespace-nowrap" id="lapValPembelianBahan">Rp 0</span>
                             </div>
-                            <div class="py-2.5 flex justify-between items-center">
+                            <div class="py-2.5 flex justify-between items-center gap-3">
                                 <span class="text-slate-600">Biaya Bahan Baku Terpakai</span>
-                                <span class="font-bold text-amber-600" id="lapValBahanTerpakai">Rp 0</span>
+                                <span class="font-bold text-amber-600 shrink-0 whitespace-nowrap" id="lapValBahanTerpakai">Rp 0</span>
                             </div>
 
                             <!-- Subtotal Beban -->
                             <div class="pt-3 pb-1 border-t border-slate-200">
-                                <div class="flex justify-between items-baseline">
+                                <div class="flex justify-between items-baseline gap-3">
                                     <span class="font-extrabold text-[#BE123C] text-base">TOTAL BEBAN USAHA</span>
-                                    <span class="font-black text-[#BE123C] text-lg sm:text-xl" id="lapValTotalBeban">Rp 0</span>
+                                    <span class="font-black text-[#BE123C] text-lg sm:text-xl shrink-0 whitespace-nowrap" id="lapValTotalBeban">Rp 0</span>
                                 </div>
                                 <p class="text-[11px] text-slate-400 mt-1 italic">*Rumus: Beban Pengeluaran Operasional + Biaya Bahan Baku Terpakai.</p>
                             </div>
@@ -735,10 +760,16 @@
                         <div>
                             <span class="text-[11px] uppercase tracking-widest font-bold text-blue-200 block">LABA BERSIH SEDERHANA</span>
                             <div class="text-2xl sm:text-3xl font-black tracking-tight mt-0.5 text-white" id="lapValLabaBersih">Rp 0</div>
+                            <div class="flex items-center gap-2 text-[11px] font-semibold text-blue-200 mt-2">
+                                <span>Cash: <span class="font-bold text-white ml-0.5" id="lapValLabaCash">Rp 0</span></span>
+                                <span class="text-blue-300/60">•</span>
+                                <span>QRIS: <span class="font-bold text-emerald-300 ml-0.5" id="lapValLabaQris">Rp 0</span></span>
+                            </div>
                         </div>
                         <div class="sm:text-right border-t sm:border-t-0 sm:border-l border-blue-400/30 pt-3 sm:pt-0 sm:pl-6 w-full sm:w-auto">
                             <span class="text-[11px] text-blue-200 font-medium block">Rumus:</span>
                             <span class="text-xs font-bold text-white tracking-wide">Total Omzet – Total Beban Usaha</span>
+                            <p class="text-[10px] text-blue-200/80 mt-1 italic sm:text-right">*Cash: Omzet Cash – Beban | QRIS: Masuk Rekening</p>
                         </div>
                     </div>
 
@@ -3256,6 +3287,10 @@
             const totalBebanUsaha = totalPengeluaran + totalBiayaBahanTerpakai;
             const labaBersih = totalOmzet - totalBebanUsaha;
 
+            // Rincian Cash & QRIS Laba Bersih
+            const labaCash = (cash + camiduPaidCash) - totalBebanUsaha;
+            const labaQris = qris + camiduPaidQris;
+
             // 3. Render ke Elemen DOM
             const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
 
@@ -3273,6 +3308,8 @@
             setTxt('lapValTotalBeban', formatRp(totalBebanUsaha));
 
             setTxt('lapValLabaBersih', formatRp(labaBersih));
+            setTxt('lapValLabaCash', labaCash < 0 ? '-Rp ' + Math.abs(Math.round(labaCash)).toLocaleString('id-ID') : formatRp(labaCash));
+            setTxt('lapValLabaQris', formatRp(labaQris));
             safeCreateIcons();
         }
 
@@ -3298,6 +3335,8 @@
             const totalBeban = document.getElementById('lapValTotalBeban')?.innerText || 'Rp 0';
 
             const labaBersih = document.getElementById('lapValLabaBersih')?.innerText || 'Rp 0';
+            const labaCash = document.getElementById('lapValLabaCash')?.innerText || 'Rp 0';
+            const labaQris = document.getElementById('lapValLabaQris')?.innerText || 'Rp 0';
             const signPengelola = localStorage.getItem("warkop_label_pengelola") || "Pengelola Warkop";
             const signOwner = localStorage.getItem("warkop_label_owner") || "Owner Warkop";
 
@@ -3387,7 +3426,7 @@
 
                     <!-- LABA BERSIH -->
                     <tr>
-                        <td colspan="2" class="card-laba" style="text-align: left; padding: 12px;">LABA BERSIH SEDERHANA</td>
+                        <td colspan="2" class="card-laba" style="text-align: left; padding: 12px;">LABA BERSIH SEDERHANA<br><small style="font-size: 8.5pt; font-weight: normal; color: #93C5FD;">(Cash: ${labaCash}, QRIS: ${labaQris})</small></td>
                         <td class="card-laba" style="text-align: right; padding: 12px;">${labaBersih}</td>
                     </tr>
                     <tr>
